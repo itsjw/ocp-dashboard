@@ -63,11 +63,30 @@ const isProd = (process.env.NODE_ENV === 'production');
 
 //add all external css to be added in our index.html--> like as if it's .angular-cli.json
 const styles = [
-  "./src/styles.scss"
+  "./src/styles.scss",
+  "./node_modules/bootstrap/dist/css/bootstrap.css",
+  "./node_modules/@nebular/theme/styles/prebuilt/default.css", // or cosmic.css
+  "./node_modules/typeface-exo/index.css",
+  "./node_modules/roboto-fontface/css/roboto/roboto-fontface.css",
+  "./node_modules/ionicons/dist/scss/ionicons.scss",
+  "./node_modules/font-awesome/scss/font-awesome.scss",
+  "./node_modules/nebular-icons/scss/nebular-icons.scss",
+  "./node_modules/socicon/css/socicon.css",
+  "./node_modules/pace-js/templates/pace-theme-flash.tmpl.css",
+  "./src/app/@theme/styles/styles.scss"
 ];
 
 //we add all our external scripts we want to load externally, like inserting in our index.html --> like as if it's .angular-cli.json
 const scripts = [
+  "./node_modules/pace-js/pace.min.js",
+  "./node_modules/tinymce/tinymce.min.js",
+  "./node_modules/tinymce/themes/modern/theme.min.js",
+  "./node_modules/tinymce/plugins/link/plugin.min.js",
+  "./node_modules/tinymce/plugins/paste/plugin.min.js",
+  "./node_modules/tinymce/plugins/table/plugin.min.js",
+  // "./src/assets/vendors/echarts.min.js",
+  // "./src/assets/vendors/echarts.world.min.js",
+  "./node_modules/chart.js/dist/Chart.min.js"
 ];
 
 //create file path for each , so we use for our excludes and includes where needed

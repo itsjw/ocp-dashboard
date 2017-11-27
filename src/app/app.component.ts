@@ -1,13 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { AnalyticsService } from './@core/utils/analytics.service';
 import { ElectronService } from './providers/electron.service';
 
+// @Component({
+//   selector: 'app-root',
+//   templateUrl: './app.component.html',
+//   styleUrls: ['./app.component.scss']
+// })
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  template: '<router-outlet></router-outlet>',
 })
-export class AppComponent {
-  constructor(public electronService: ElectronService) {
+export class AppComponent implements OnInit {
+  constructor(public electronService: ElectronService, private analytics: AnalyticsService) {
 
     if (electronService.isElectron()) {
       console.log('Mode electron');
@@ -18,5 +23,8 @@ export class AppComponent {
     } else {
       console.log('Mode web');
     }
+  }
+  ngOnInit(): void {
+    this.analytics.trackPageViews();
   }
 }

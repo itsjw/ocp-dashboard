@@ -1,0 +1,74 @@
+// themes - our custom or/and out of the box themes
+@import 'themes';
+
+// framework component themes (styles tied to theme variables)
+@import '~@nebular/theme/styles/globals';
+@import '~@nebular/auth/styles/all';
+
+// and change some variables inside of the map
+$nb-themes: nb-register-theme((
+    // fonts
+    font-main: "Open Sans",
+    font-secondary: "Roboto",
+    font-size: 0.8rem,
+    font-size-lg: 1.1rem,
+    font-size-xlg:1.2rem,
+    menu-icon-font-size: 2.2rem,
+    color-fg-text: #939da8,
+    color-fg-heading: #939da8,
+    // font-weight-normal: 400,
+    // font-weight-bold:600,
+
+    // cards
+    card-height-xsmall: 216px, // default val
+
+    /**
+    * sidemenu
+    */
+    // category item
+    menu-item-padding: 0.2rem 1rem 0.2rem 0.75rem,
+
+    // item
+    menu-submenu-item-padding: 0.3rem 0.8rem,
+
+    menu-font-weight: font-weight-normal,
+    menu-group-font-weight: 200,
+
+    // menu-active-bg: #3E4855, // active + hover
+
+    // menu-submenu-bg: #3E4855,
+
+    // sidebar-bg: #3E4855, // background
+
+    // // submenu
+    // menu-submenu-active-bg: #3E4855, // active (opened)
+
+    // // menu-submenu-hover-bg: #3E4855,
+
+    // // menu-submenu-fg: #3E4855,
+
+
+    // Header
+    header-bg: #1f262d,
+
+    // global colors
+    color-bg: #37414b,
+    color-fg: #ffffff,
+    // global
+    // padding: 1rem
+
+  ), default, default); // let's leave it as default
+
+// loading progress bar theme
+@import './pace.theme';
+
+// install the framework and custom global styles
+@include nb-install() {
+
+  // framework global styles
+  @include nb-theme-global();
+  @include nb-auth-global();
+
+  // loading progress bar
+  @include ngx-pace-theme();
+};

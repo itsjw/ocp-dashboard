@@ -5,3 +5,16 @@ html, body {
 
   height: 100%;
 }
+
+
+
+// import Nebular Theme System and the default theme
+// @import '~@nebular/theme/styles/theming';
+// @import '~@nebular/theme/styles/themes/default';
+
+// and change some variables inside of the map
+$nb-themes: nb-register-theme((
+
+  color-bg: rgb(128, 26, 26),
+  color-fg: rgb(9, 78, 46),
+), default, default); // let's leave it as default
