@@ -133,3 +133,4 @@ You can run tests with the command lines below :
 [twitter-badge]: https://img.shields.io/twitter/url/https/github.com/maximegris/angular-electron.svg?style=social
 "# electron-angular-nfc" 
 "# electron-angular-nfc" 
+"# nfc-electron-angular" 
