@@ -30,11 +30,13 @@ export class HeaderComponent implements OnInit {
   }
 
   toggleSidebar(): boolean {
+    console.log('toggleSidebar')
     this.sidebarService.toggle(true, 'menu-sidebar');
     return false;
   }
 
   toggleSettings(): boolean {
+    console.log('toggleSettings')
     this.sidebarService.toggle(false, 'settings-sidebar');
     return false;
   }

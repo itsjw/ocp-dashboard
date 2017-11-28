@@ -8,7 +8,7 @@
 // and change some variables inside of the map
 $nb-themes: nb-register-theme((
     // fonts
-    font-main: "Open Sans",
+    font-main: "Roboto",
     font-secondary: "Roboto",
     font-size: 0.8rem,
     font-size-lg: 1.1rem,
@@ -32,12 +32,27 @@ $nb-themes: nb-register-theme((
     menu-submenu-item-padding: 0.3rem 0.8rem,
 
     menu-font-weight: font-weight-normal,
-    menu-group-font-weight: 200,
+    // menu-group-font-weight: 400,
+    
+    user-menu-active-bg: #ffffff,
+    user-menu-border: #cccccc,
+    tabs-selected: #0e131a,
+    color-fg-highlight:#0e131a,
+
 
     // menu-active-bg: #3E4855, // active + hover
+    sidebar-bg: #263548,
 
-    // menu-submenu-bg: #3E4855,
+    menu-submenu-bg: #252d38,
+    menu-submenu-active-bg: #3b414d,
+    menu-submenu-active-fg: #cccccc,
+    menu-submenu-active-border-color: #999999,
+    menu-submenu-item-border-width: 0.09rem,
+    menu-submenu-item-border-radius: 0.2rem,
 
+    menu-item-separator: #888888,
+    menu-active-bg: #415166,
+    menu-bg: #2e4057,
     // sidebar-bg: #3E4855, // background
 
     // // submenu
@@ -47,15 +62,22 @@ $nb-themes: nb-register-theme((
 
     // // menu-submenu-fg: #3E4855,
 
+    // green overwrite
+    route-tabs-selected: #939da8,
+    smart-table-paging-bg-active: #939da8,
+    form-control-selected-border-color: #939da8,
+    checkbox-selected-border-color: #939da8,
+    radio-fg: #939da8,
 
     // Header
-    header-bg: #1f262d,
+    header-bg: #263548,
 
     // global colors
-    color-bg: #37414b,
-    color-fg: #ffffff,
+    color-bg: #fafafa,
+    color-fg: #cccccc,
     // global
     // padding: 1rem
+    radius: 0.25rem,
 
   ), default, default); // let's leave it as default
 
