@@ -8,15 +8,14 @@
 // and change some variables inside of the map
 $nb-themes: nb-register-theme((
     // fonts
-    font-main: "Roboto",
-    font-secondary: "Roboto",
-    font-size: 0.8rem,
+    font-main: Roboto,
+    font-secondary: Roboto, // @TODO: choose & set a secondary font
+    font-size: 0.94rem, // main font-size
     font-size-lg: 1.1rem,
     font-size-xlg:1.2rem,
-    menu-icon-font-size: 2.2rem,
-    color-fg-text: #939da8,
-    color-fg-heading: #939da8,
-    // font-weight-normal: 400,
+    color-fg-text: #72777a,
+    color-fg-heading: color-fg,
+    font-weight-normal: 500,
     // font-weight-bold:600,
 
     // cards
@@ -26,34 +25,63 @@ $nb-themes: nb-register-theme((
     * sidemenu
     */
     // category item
-    menu-item-padding: 0.2rem 1rem 0.2rem 0.75rem,
+    menu-item-padding: 0.68rem 1.8rem,
 
     // item
     menu-submenu-item-padding: 0.3rem 0.8rem,
 
     menu-font-weight: font-weight-normal,
     // menu-group-font-weight: 400,
-    
-    user-menu-active-bg: #ffffff,
-    user-menu-border: #cccccc,
-    tabs-selected: #0e131a,
-    color-fg-highlight:#0e131a,
 
+    // profile menu
+    user-menu-bg:#ffffff, //bg
+    user-menu-active-bg: #f6f6f6, //bg
+
+    // user-menu-fg: #313131, // @TODO: global fg color
+    user-menu-active-fg: color-fg,
+    user-menu-border: #eee,
+
+    // Borders
+    // form-control-border-width: 1px,
+    // btn-secondary-border-width: 1px,
+    // checkbox-border-size: 1px,
+
+    // tabs-selected: #0e131a,
+    tabs-selected: red,
+
+    // top menu icons
+    actions-size-medium: 1.75rem,
+
+    /**
+    * Sidebar Menu
+    */
+    sidebar-height: 90vh,
+
+    sidebar-padding: 0,
 
     // menu-active-bg: #3E4855, // active + hover
-    sidebar-bg: #263548,
+    // sidebar-bg: #263548, //bg
 
-    menu-submenu-bg: #252d38,
-    menu-submenu-active-bg: #3b414d,
-    menu-submenu-active-fg: #cccccc,
-    menu-submenu-active-border-color: #999999,
+    // scrollbar-thumb-radius: 0, // doesn't work - done in sample.layout.css => nb-sidebar.menu-sidebar { /deep/ .main-container { border-top-right-radius:0
+
+    menu-submenu-bg: #fcfcfc, //bg
+    // menu-submenu-active-bg: #eeeeee, //bg
+    menu-submenu-active-fg: #8b8b8b,
+    menu-submenu-active-border-color: #eeeeee,
+    menu-submenu-hover-fg: #4b4b4b,
+
     menu-submenu-item-border-width: 0.09rem,
-    menu-submenu-item-border-radius: 0.2rem,
+    menu-submenu-item-border-radius: 0.1rem,
 
-    menu-item-separator: #888888,
-    menu-active-bg: #415166,
-    menu-bg: #2e4057,
+
+    menu-item-separator: #eeeeee, // border-bottom
+    menu-active-bg: #f8f8f8, //bg
+    menu-bg: #f8f8f8, //bg
     // sidebar-bg: #3E4855, // background
+    menu-submenu-item-container-padding:0 0.75rem,
+
+    // Sidebar Menu icon
+    menu-icon-font-size: 1.6rem,
 
     // // submenu
     // menu-submenu-active-bg: #3E4855, // active (opened)
@@ -62,7 +90,7 @@ $nb-themes: nb-register-theme((
 
     // // menu-submenu-fg: #3E4855,
 
-    // green overwrite
+    // green overwrite //@TODO: split into corresponding components
     route-tabs-selected: #939da8,
     smart-table-paging-bg-active: #939da8,
     form-control-selected-border-color: #939da8,
@@ -70,14 +98,75 @@ $nb-themes: nb-register-theme((
     radio-fg: #939da8,
 
     // Header
-    header-bg: #263548,
+    header-bg: #fbfbfb, //bg
+
+    // layout-window-mode-padding-top: 0,
+    header-height: 4.25rem,
+
+    // shadows
+    // shadow: ,
+    // sidebar-shadow: none,
+    header-shadow: 0 -2px 12px 0 #929292,
+
+
+    layout-padding: 1.25rem 1.25rem 0.25rem,
+    /**
+    * Footer
+    */
+    footer-height: 3rem,
+    /**
+    * Forms-control
+    */
+
+    form-control-border-width: 1px,
+    form-control-border-type: solid,
+    form-control-border-radius: 0.25rem,
+    form-control-border-color: #dadfe6,
+    // form-control-selected-border-color: color-success,
+
+    // form-control-info-border-color: color-info,
+    // form-control-success-border-color: color-success,
+    // form-control-danger-border-color: color-danger,
+    // form-control-warning-border-color: color-warning,
+
+    form-control-placeholder-color: color-fg,
+    form-control-placeholder-font-size: 1rem,
+
+    form-control-font-size: 1rem,
+    form-control-sm-font-size: font-size-sm,
+    form-control-sm-padding: 0.5rem 0.75rem,
+    form-control-lg-font-size: font-size-lg,
+    form-control-lg-padding: 0.5rem 0.75rem,
+
+    form-control-label-font-weight: 400,
+
+    // form-control-feedback-font-size: 0.875rem,
+    // form-control-feedback-font-weight: font-weight-normal,
+
+
+    /**
+    * @Global
+    */
+    layout-bg: #f9fafb,
+    layout-window-mode-bg: #f9fafb,
 
     // global colors
-    color-bg: #fafafa,
-    color-fg: #cccccc,
-    // global
+    color-bg: #ffffff,
+    color-fg: #616161,
+    color-fg-highlight:#3d518c,
+
+    color-primary: #3d518c,
+    color-success: #59b969,
+    color-info: #4ca6ff,
+    color-warning: #ffa100,
+    color-danger: #c74a6a,
+
+
+    // sidebar-bg: #f8f8f8,
+
     // padding: 1rem
     radius: 0.25rem,
+    shadow: 0px 0px 4px 1px #efefef,
 
   ), default, default); // let's leave it as default
 
@@ -94,3 +183,13 @@ $nb-themes: nb-register-theme((
   // loading progress bar
   @include ngx-pace-theme();
 };
+
+
+/**
+nbcard
+    box-shadow: 0px 0px 4px 1px #efefef;
+    border: 1px solid #eee;
+    border-radius: 0.2rem;
+nblayoutheader
+    background: #fbfbfb;
+*/

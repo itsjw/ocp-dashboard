@@ -1,0 +1,45 @@
+<nb-layout [center]="layout.id === 'center-column'" windowMode>
+  <nb-layout-header fixed>
+    <ngx-header [position]="sidebar.id === 'left' ? 'normal': 'inverse'"></ngx-header>
+  </nb-layout-header>
+
+  <nb-layout-column class="sidebar-col">
+    <nb-sidebar class="menu-sidebar"
+                tag="menu-sidebar"
+                responsive>
+
+      <ng-content select="nb-menu"></ng-content>
+    </nb-sidebar>
+  </nb-layout-column>
+
+  <nb-layout-column class="main-content">
+    <ng-content select="router-outlet"></ng-content>
+  </nb-layout-column>
+
+  <nb-layout-footer>
+  <!-- <nb-layout-footer fixed class="footer-fixed"> -->
+    <ngx-footer></ngx-footer>
+  </nb-layout-footer>
+
+
+</nb-layout>
+
+<!--
+<nb-layout center>
+  <nb-layout-header>Great Company</nb-layout-header>
+
+
+  <nb-layout-column>
+    <nb-sidebar class="menu-sidebar"
+        tag="menu-sidebar"
+        responsive>
+
+    <ng-content select="nb-menu"></ng-content>
+    </nb-sidebar>
+  </nb-layout-column>
+  <nb-layout-column>
+    Hello World!
+  </nb-layout-column>
+
+  <nb-layout-footer>Contact us</nb-layout-footer>
+</nb-layout> -->

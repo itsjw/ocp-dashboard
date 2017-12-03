@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 
-// import './ckeditor.loader'; // @disabled
-// import 'ckeditor';
+import './ckeditor.loader'; // @disabled
+// import CKEDITOR from '../../../../../node_modules/ckeditor/ckeditor.js'
+import 'ckeditor';
 
 @Component({
   selector: 'ngx-ckeditor',

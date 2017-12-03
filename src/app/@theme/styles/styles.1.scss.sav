@@ -1,0 +1,118 @@
+// themes - our custom or/and out of the box themes
+@import 'themes';
+
+// framework component themes (styles tied to theme variables)
+@import '~@nebular/theme/styles/globals';
+@import '~@nebular/auth/styles/all';
+
+// and change some variables inside of the map
+$nb-themes: nb-register-theme((
+    // fonts
+    font-main: "Roboto",
+    font-secondary: "Roboto",
+    font-size: 0.8rem,
+    font-size-lg: 1.1rem,
+    font-size-xlg:1.2rem,
+    menu-icon-font-size: 2.2rem,
+    color-fg-text: #7d7d7d,
+    color-fg-heading: color-fg,
+    // font-weight-normal: 400,
+    // font-weight-bold:600,
+
+    // cards
+    card-height-xsmall: 216px, // default val
+
+    /**
+    * sidemenu
+    */
+    // category item
+    menu-item-padding: 0.2rem 1rem 0.2rem 0.75rem,
+
+    // item
+    menu-submenu-item-padding: 0.3rem 0.8rem,
+
+    menu-font-weight: font-weight-normal,
+    // menu-group-font-weight: 400,
+
+    // profile menu
+    user-menu-bg:#ffffff,
+    user-menu-active-bg: #f6f6f6,
+
+    // user-menu-fg: #313131, // @TODO: global fg color
+    user-menu-active-fg: color-fg,
+    user-menu-border: #ffffff,
+
+    // tabs-selected: #0e131a,
+    tabs-selected: red,
+    color-fg-highlight:#0e131a,
+
+
+    // menu-active-bg: #3E4855, // active + hover
+    sidebar-bg: #263548,
+
+    // scrollbar-thumb-radius: 0, // doesn't work - done in sample.layout.css => nb-sidebar.menu-sidebar { /deep/ .main-container { border-top-right-radius:0
+
+    menu-submenu-bg: #252d38,
+    menu-submenu-active-bg: #3b414d,
+    menu-submenu-active-fg: #cccccc,
+    menu-submenu-active-border-color: #999999,
+    menu-submenu-item-border-width: 0.09rem,
+    menu-submenu-item-border-radius: 0.2rem,
+
+    menu-item-separator: #888888,
+    menu-active-bg: #415166,
+    menu-bg: #2e4057,
+    // sidebar-bg: #3E4855, // background
+
+    // // submenu
+    // menu-submenu-active-bg: #3E4855, // active (opened)
+
+    // // menu-submenu-hover-bg: #3E4855,
+
+    // // menu-submenu-fg: #3E4855,
+
+    // green overwrite //@TODO: split into corresponding components
+    route-tabs-selected: #939da8,
+    smart-table-paging-bg-active: #939da8,
+    form-control-selected-border-color: #939da8,
+    checkbox-selected-border-color: #939da8,
+    radio-fg: #939da8,
+
+    // Header
+    header-bg: #263548,
+
+    // layout-window-mode-padding-top: 0,
+    // header-height: 0,
+
+    // shadows
+    // shadow: ,
+    // sidebar-shadow: none,
+    header-shadow: 0 -2px 12px 0 #1c242f,
+
+    /**
+    * @Global
+    */
+    // layout-bg: #000000,
+
+    // global colors
+    color-bg: #fafafa,
+    color-fg: #616161,
+
+    // padding: 1rem
+    radius: 0.25rem,
+
+  ), default, default); // let's leave it as default
+
+// loading progress bar theme
+@import './pace.theme';
+
+// install the framework and custom global styles
+@include nb-install() {
+
+  // framework global styles
+  @include nb-theme-global();
+  @include nb-auth-global();
+
+  // loading progress bar
+  @include ngx-pace-theme();
+};

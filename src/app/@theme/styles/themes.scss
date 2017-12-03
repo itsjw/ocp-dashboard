@@ -25,3 +25,15 @@ $nb-themes: nb-register-theme((
   font-main: Roboto,
   font-secondary: Exo,
 ), cosmic, cosmic);
+
+//@Bootstrap patch - Formerly version of Bootstrap (v4.0.0-alpha.6) had a padding for blockquotes which is NOT present in current version ("4.0.0-beta.2")
+.blockquote{
+  padding:.5rem 1rem;
+}
+
+// overwrite default border width (2px -> 1px)  for profile menu (when avatar/nick is clicked in top bar)
+.user-context-menu {
+  border-width: 1px !important;
+  // box-shadow: nb-theme(header-shadow);
+  box-shadow: 0 0px 12px 0 #e8e8e8; //@TODO: should be a global shadow variable
+}

@@ -68,7 +68,7 @@ const styles = [
   "./node_modules/@nebular/theme/styles/prebuilt/default.css", // or cosmic.css
   "./node_modules/typeface-exo/index.css",
   "./node_modules/roboto-fontface/css/roboto/roboto-fontface.css",
-  "./node_modules/ionicons/dist/scss/ionicons.scss",
+  "./node_modules/ionicons/scss/ionicons.scss",
   "./node_modules/font-awesome/scss/font-awesome.scss",
   "./node_modules/nebular-icons/scss/nebular-icons.scss",
   "./node_modules/socicon/css/socicon.css",
@@ -86,7 +86,8 @@ const scripts = [
   "./node_modules/tinymce/plugins/table/plugin.min.js",
   // "./src/assets/vendors/echarts.min.js",
   // "./src/assets/vendors/echarts.world.min.js",
-  "./node_modules/chart.js/dist/Chart.min.js"
+  "./node_modules/chart.js/dist/Chart.min.js",
+  // "./node_modules/ckeditor/ckeditor.js"
 ];
 
 //create file path for each , so we use for our excludes and includes where needed

@@ -10,10 +10,11 @@
   nb-sidebar.settings-sidebar {
     $sidebar-width: 7.5rem;
 
-    transition: width 0.3s ease;
+    // transition: width 0.3s ease;
+    transition: width 10s ease;
     width: $sidebar-width;
     overflow: hidden;
-
+    nb-layout-column.left
     &.collapsed {
       width: 0;
 
@@ -30,7 +31,8 @@
     /deep/ .main-container {
       width: $sidebar-width;
       background: nb-theme(color-bg);
-      transition: width 0.3s ease;
+      // transition: width 0.3s ease;
+      transition: width 10s ease;
       overflow: hidden;
 
       .scrollable {
@@ -44,13 +46,36 @@
   }
 
   nb-sidebar.menu-sidebar {
+    height: calc(90vh - #{nb-theme(header-height)});
 
-    margin-top: nb-theme(sidebar-header-gap);
+    // add - menu li border top
+    /deep/ .menu-item {
+      border-top: 1px solid #ffffff;
+      a {
+        transition: all 0.4s ease;
+      }
+    }
+
+    // margin-top: nb-theme(sidebar-header-gap); // margin top to place the sidebar header (old: SUPPORT US)
+    padding-top: 1.25rem;
+    // background: #ffffff !important;
+
 
     /deep/ .main-container {
-      height:
-        calc(#{nb-theme(sidebar-height)} - #{nb-theme(header-height)} - #{nb-theme(sidebar-header-gap)}) !important;
-      border-top-right-radius: nb-theme(radius);
+      // calc(#{nb-theme(sidebar-height)} - #{nb-theme(header-height)} - #{nb-theme(sidebar-header-gap)}) !important; // no header gap anymore
+      // border-top-right-radius: nb-theme(radius); // Sidebar to right border-radius
+
+      height: calc(#{nb-theme(sidebar-height)} - #{nb-theme(header-height)}) !important;
+      border-top-right-radius: 0;
+      transition: width 0.1s ease;
+
+      background: transparent;
+      box-shadow: none;
+    }
+
+    /deep/ nb-menu {
+      border: 1px solid #eeeeee;
+      border-bottom: 0;
     }
 
     /deep/ nb-sidebar-header {
@@ -79,6 +104,13 @@
       }
     }
 
+    /deep/ .menu-title {
+      white-space: nowrap;
+    }
+
+    &.expanded {
+
+    }
     &.compacted {
 
       /deep/ nb-sidebar-header {
@@ -116,15 +148,45 @@
       /deep/ .main-container {
         height: calc(#{nb-theme(sidebar-height)} - #{nb-theme(header-height)}) !important;
         border-top-right-radius: 0;
+        transition: width 0.1s ease;
+
+        background: transparent;
+        box-shadow: none;
 
         .scrollable {
           padding-top: 0;
         }
       }
+
+      /deep/ nb-menu {
+        border: 1px solid #eeeeee;
+        border-bottom: 0;
+      }
+
     }
 
     .main-btn {
       display: none;
     }
   }
+}
+// add - user-menu when profile pic/name is clicked - @TODO: get rid of /deep/ selector (deprecated)
+/deep/ .user-context-menu {
+  margin-top: 0.8rem;
+}
+
+/**
+* Fixes the footer at the bottom of the page when scrolling down - disabled by default
+*/
+.footer-fixed {
+  flex:0; //@HACK to get the sidebar width as auto instead of 50%
+  // position: fixed;
+  // bottom: 0;
+  // width: 100%;
+}
+
+/deep/ .sidebar-col {
+  flex-grow:0 !important; // force the sidebar column width to not grow in the layout over it's default size
+  padding: 0 !important; // force the remove of the default column padding
+  width: auto !important; // force the sidebar width to auto: 'all the sidebar content width'
 }
