@@ -134,15 +134,20 @@ $nb-themes: nb-register-theme((
 
     form-control-font-size: 1rem,
     form-control-sm-font-size: font-size-sm,
-    form-control-sm-padding: 0.5rem 0.75rem,
+    form-control-sm-padding: 0.5rem 0.75rem !important,
     form-control-lg-font-size: font-size-lg,
-    form-control-lg-padding: 0.5rem 0.75rem,
+    form-control-lg-padding: 0.5rem 0.75rem !important,
 
     form-control-label-font-weight: 400,
 
     // form-control-feedback-font-size: 0.875rem,
     // form-control-feedback-font-weight: font-weight-normal,
 
+    /**
+    * Cards
+    */
+    card-shadow: none,
+    card-border-radius: 0.15rem,
 
     /**
     * @Global

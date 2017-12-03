@@ -63,9 +63,8 @@ const isProd = (process.env.NODE_ENV === 'production');
 
 //add all external css to be added in our index.html--> like as if it's .angular-cli.json
 const styles = [
-  "./src/styles.scss",
   "./node_modules/bootstrap/dist/css/bootstrap.css",
-  "./node_modules/@nebular/theme/styles/prebuilt/default.css", // or cosmic.css
+  // "./node_modules/@nebular/theme/styles/prebuilt/default.css", // or cosmic.css
   "./node_modules/typeface-exo/index.css",
   "./node_modules/roboto-fontface/css/roboto/roboto-fontface.css",
   "./node_modules/ionicons/scss/ionicons.scss",
@@ -73,7 +72,8 @@ const styles = [
   "./node_modules/nebular-icons/scss/nebular-icons.scss",
   "./node_modules/socicon/css/socicon.css",
   "./node_modules/pace-js/templates/pace-theme-flash.tmpl.css",
-  "./src/app/@theme/styles/styles.scss"
+  "./src/app/@theme/styles/styles.scss",
+  "./src/styles.scss",
 ];
 
 //we add all our external scripts we want to load externally, like inserting in our index.html --> like as if it's .angular-cli.json

@@ -37,3 +37,7 @@ $nb-themes: nb-register-theme((
   // box-shadow: nb-theme(header-shadow);
   box-shadow: 0 0px 12px 0 #e8e8e8; //@TODO: should be a global shadow variable
 }
+
+nb-card {
+  border: 1px solid #eeeeee;
+}
