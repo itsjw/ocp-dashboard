@@ -12,5 +12,6 @@ import { from } from 'rxjs/observable/from';
   declarations: [
     NfcComponent
   ],
+  providers: []
 })
 export class NfcModule { }

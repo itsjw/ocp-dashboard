@@ -1,5 +1,6 @@
+import { NfcService } from './../../providers/nfc/nfc.service';
 import { Component, OnInit } from '@angular/core';
-import { NFC } from 'nfc-pcsc';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'ngx-nfc',
@@ -8,14 +9,17 @@ import { NFC } from 'nfc-pcsc';
 })
 
 export class NfcComponent implements OnInit {
-  clients: string[];
+  subscription: Subscription;
+  currentAction: string;
+  nfcStatusLoading: boolean;
+  nfc: any;
   nfcStatus: any;
   writtenCardsCount: number;
 
-  selectedValue: any;
-  countries: any;
+  clients: any[];
+  selectedClient: { id: number; name: string; };
 
-  constructor() {
+  constructor(public nfcS: NfcService) {
     console.log('NFC page loaded.')
   }
 
@@ -24,34 +28,41 @@ export class NfcComponent implements OnInit {
 
 
   ngAfterViewInit () {
-    this.countries = [
-      {id: 1, name: "United States"},
-      {id: 2, name: "Australia"},
-      {id: 3, name: "Canada"},
-      {id: 4, name: "Brazil"},
-      {id: 5, name: "England"}
-    ];
-    this.selectedValue = null;
 
-    console.log(NFC);
-    this.writtenCardsCount = 0;
-    this.nfcStatus =  'Loading nfc tools...'
+    this.nfcS.init();
+
+    /**
+     * Init:
+     * 0- Get client list
+     * 1- Init NFC, check status
+     */
+    // @TODO: tcp request here
     setTimeout(() => {
-      this.clients = [ 'a', 'b', 'c', 'd', 'e'];
+      this.clients = [
+        {id: 1, name: 'a'},
+        {id: 2, name: 'b'},
+        {id: 3, name: 'c'},
+        {id: 4, name: 'd'},
+        {id: 5, name: 'e'}
+      ];
+      this.selectedClient =  this.clients[0];
     }, 1000);
-    typeof NFC !== 'undefined' ? this.nfcStatus = "green" : this.nfcStatus = false;
 
-    const nfc = new NFC();
-    nfc.on('reader', async reader => {
-      console.log('Reader Found :', reader.name);
+    this.writtenCardsCount = 0;
+    this.nfcStatusLoading =  true;
 
-      reader.aid = 'F222222222';
-      reader.on('card', async card => {
-        console.log('got card')
-      });
-      reader.on('error', async error => {
-        console.log('Reader Error Occured :', error);
-      });
-    });
-}
+
+    this.currentAction = '-';
+
+
+
+    this.subscription = this.nfcS.data.subscribe(
+      value => 
+      this.nfc = value,
+      // console.log('v', value),
+      error => console.log('e', error),
+      () => console.log('nfc end.')
+    );
+
+  }
 }
