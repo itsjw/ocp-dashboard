@@ -9,7 +9,6 @@ import 'style-loader!angular2-toaster/toaster.css';
   templateUrl: './notifications.component.html',
 })
 export class NotificationsComponent {
-  constructor(private toasterService: ToasterService) {}
 
   config: ToasterConfig;
 
@@ -37,6 +36,8 @@ export class NotificationsComponent {
     { title: null, body: 'Toastr rock!' },
     { title: 'What about nice html?', body: '<b>Sure you <em>can!</em></b>' },
   ];
+
+  constructor(private toasterService: ToasterService) {}
 
   makeToast() {
     this.showToast(this.type, this.title, this.content);

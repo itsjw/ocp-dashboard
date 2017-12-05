@@ -1,11 +1,12 @@
-import { NfcParserService } from 'app/providers/nfc/nfc.read';
+import { LoggingService } from './providers/logging.service';
+import { NfcParserService } from 'app/providers/nfc/nfcparser.service';
 import 'zone.js/dist/zone-mix';
 import 'reflect-metadata';
 import 'polyfills';
 
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgModule } from '@angular/core';
+import { NgModule, ErrorHandler } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { APP_BASE_HREF } from '@angular/common';
 import { HttpModule } from '@angular/http';
@@ -21,6 +22,7 @@ import { ThemeModule } from './@theme/theme.module';
 
 import { ElectronService } from './providers/electron.service';
 import { NfcService } from './providers/nfc/nfc.service';
+import { GlobalErrorHandler } from 'app/providers/errorHandler.service';
 
 
 @NgModule({
@@ -45,7 +47,14 @@ import { NfcService } from './providers/nfc/nfc.service';
     ElectronService, 
     { provide: APP_BASE_HREF, useValue: '/' }, 
     NfcService, 
-    NfcParserService
+    NfcParserService,
+    // disable error handler for now
+    // @TODO: to clean.
+    // {
+    //   provide: ErrorHandler, 
+    //   useClass: GlobalErrorHandler
+    // },
+    // LoggingService
   ],
   bootstrap: [AppComponent]
 })

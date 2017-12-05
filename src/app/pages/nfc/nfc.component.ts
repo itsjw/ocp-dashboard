@@ -1,6 +1,10 @@
+import { ToasterConfigService } from './../../providers/toaster.service';
 import { NfcService } from './../../providers/nfc/nfc.service';
 import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
+
+import { ToasterService, ToasterConfig, Toast, BodyOutputType } from 'angular2-toaster';
+import 'style-loader!angular2-toaster/toaster.css';
 
 @Component({
   selector: 'ngx-nfc',
@@ -9,18 +13,21 @@ import { Subscription } from 'rxjs/Subscription';
 })
 
 export class NfcComponent implements OnInit {
-  subscription: Subscription;
+
+  toasterConfig: ToasterConfig;
+  nfcThread: Subscription;
   currentAction: string;
   nfcStatusLoading: boolean;
-  nfc: any;
-  nfcStatus: any;
+  nfc: any; // global obj
   writtenCardsCount: number;
 
   clients: any[];
   selectedClient: { id: number; name: string; };
 
-  constructor(public nfcS: NfcService) {
-    console.log('NFC page loaded.')
+  readOrWriteStatus = 'write';
+
+  constructor(public nfcS: NfcService, private toasterService: ToasterService, public toasterConfigService: ToasterConfigService) {
+    console.log('NFC page loaded.');
   }
 
   ngOnInit() {
@@ -53,16 +60,36 @@ export class NfcComponent implements OnInit {
 
 
     this.currentAction = '-';
-
-
-
-    this.subscription = this.nfcS.data.subscribe(
-      value => 
-      this.nfc = value,
-      // console.log('v', value),
+    
+    /**
+     * Main NFC Thread
+     */
+    this.nfcThread = this.nfcS.data.subscribe(
+      globalNfcObject => 
+        this.nfcManager(globalNfcObject),
+        // console.log('v', value),
       error => console.log('e', error),
       () => console.log('nfc end.')
     );
 
   }
+
+  nfcManager(globalNfcObject) {
+    this.nfc = globalNfcObject;
+    console.log(globalNfcObject)
+    // something wrong happened
+    if (globalNfcObject.error) {
+      this.showToast('error', 'Erreur', globalNfcObject.error.type + ' - ' + globalNfcObject.error.error);
+      this.nfc.error = null;
+    }
+  }
+
+  // @TODO: put this in a toast component class
+  private showToast(type: string, title: string, body: string) {
+    this.toasterConfig = this.toasterConfigService.getConfig();
+    const toast: Toast = this.toasterConfigService.getToast(title, body)
+    this.toasterService.popAsync(toast);
+  }
+
+
 }
