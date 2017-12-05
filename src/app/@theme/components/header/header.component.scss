@@ -26,6 +26,10 @@
   .control-item {
     display: block;
   }
+  /deep/ .start-search {
+    font-size: 1.6rem !important;
+    margin-top: -0.25rem; // @HACK
+  }
 
   .header-container {
     display: flex;
@@ -62,7 +66,7 @@
     line-height: 1;
 
     i {
-      color: nb-theme(color-fg-highlight);
+      // color: nb-theme(color-fg-highlight);
       font-size: 2.25rem;
     }
   }

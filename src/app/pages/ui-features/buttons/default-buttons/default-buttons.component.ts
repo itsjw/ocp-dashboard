@@ -24,7 +24,7 @@ export class DefaultButtonsComponent {
         container: 'primary-container',
         containerTitle: 'Primary Button',
         title: 'Primary',
-        default: '#7659ff',
+        default: '#3d518c',
       }, {
         class: 'btn-warning',
         container: 'warning-container',

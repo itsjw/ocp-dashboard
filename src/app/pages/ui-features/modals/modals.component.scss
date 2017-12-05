@@ -2,3 +2,18 @@
 button {
   margin: 0 0.75rem 2rem 0;
 }
+ngb-modal-window {
+  opacity: 1;
+}
+.modal {
+  &.show .modal-dialog {
+      transition: 0.25s all;
+      opacity: 0;
+      transform: translate(0, 5vh);
+  }
+
+  &.custom-show .modal-dialog {
+      opacity: 1;
+      transform: translate(0, 0);
+  }
+}

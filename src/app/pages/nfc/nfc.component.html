@@ -6,15 +6,15 @@
       <nb-card-header>
           <div class="row">
               <div class="col-4">
-                <i class="fa fa-circle" aria-hidden="true" [ngClass]="{'orange': nfc?.reader?.status==loading||err, 'red': nfc?.reader?.status=='off', 'green': nfc?.reader?.status=='on'}"></i>  
-                Lecteur NFC<small> ({{ nfc?.reader?.name }})</small>
+                <i class="fa fa-circle" aria-hidden="true" [ngClass]="{'orange': nfc?.reader?.status==loading||err, 'red': nfc?.reader?.status=='off', 'green': nfc?.reader?.status=='on'}"></i>
+                Lecteur NFC<small *ngIf="nfc?.reader?.name">({{ nfc.reader.name }})</small>
               </div>
               <div class="col-4">
-                Action: 
+                Action:
                 <small>{{ currentAction }}</small>
               </div>
               <div class="col-4">
-                Nombre de carte écrites: 
+                Nombre de carte écrites:
                 <small>{{ writtenCardsCount }}</small>
               </div>
             </div>
@@ -46,6 +46,19 @@
 
       </nb-card-body>
     </nb-card>
+
+
+
+<p *ngFor="let alert of alerts" [@fadeIn]="''">
+  <ngb-alert [type]="alert.type" (close)="closeAlert(alert)" class="fade animate-show animate-hide">{{ alert.message }}</ngb-alert>
+</p>
+<p>
+  <button type="button" class="btn btn-primary" (click)="reset()">Reset</button>
+</p>
+
+
+
+
     <!-- <div class="row">
       <div class="col-lg-12">
         <ngx-hero-buttons></ngx-hero-buttons>

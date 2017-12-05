@@ -24,7 +24,6 @@ import { ElectronService } from './providers/electron.service';
 import { NfcService } from './providers/nfc/nfc.service';
 import { GlobalErrorHandler } from 'app/providers/errorHandler.service';
 
-
 @NgModule({
   declarations: [
     AppComponent
@@ -44,14 +43,14 @@ import { GlobalErrorHandler } from 'app/providers/errorHandler.service';
     AppRoutingModule
   ],
   providers: [
-    ElectronService, 
-    { provide: APP_BASE_HREF, useValue: '/' }, 
-    NfcService, 
+    ElectronService,
+    { provide: APP_BASE_HREF, useValue: '/' },
+    NfcService,
     NfcParserService,
     // disable error handler for now
     // @TODO: to clean.
     // {
-    //   provide: ErrorHandler, 
+    //   provide: ErrorHandler,
     //   useClass: GlobalErrorHandler
     // },
     // LoggingService

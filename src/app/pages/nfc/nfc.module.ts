@@ -8,18 +8,20 @@ import { ThemeModule } from '../../@theme/theme.module';
 import { NfcComponent } from './nfc.component';
 import { from } from 'rxjs/observable/from';
 import { LoggingService } from 'app/providers/logging.service';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 @NgModule({
   imports: [
     ThemeModule,
     ToasterModule,
+    NgbModule
   ],
   declarations: [
     NfcComponent
   ],
   providers: [
     {
-      provide: ErrorHandler, 
+      provide: ErrorHandler,
       useClass: GlobalErrorHandler
     },
     LoggingService,
