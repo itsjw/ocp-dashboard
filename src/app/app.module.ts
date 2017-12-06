@@ -1,5 +1,4 @@
 import { LoggingService } from './providers/logging.service';
-import { NfcParserService } from 'app/providers/nfc/nfcparser.service';
 import 'zone.js/dist/zone-mix';
 import 'reflect-metadata';
 import 'polyfills';
@@ -23,10 +22,13 @@ import { ThemeModule } from './@theme/theme.module';
 import { ElectronService } from './providers/electron.service';
 import { NfcService } from './providers/nfc/nfc.service';
 import { GlobalErrorHandler } from 'app/providers/errorHandler.service';
+import { NdefFormaterService } from 'app/providers/nfc/ndefformater.service';
+import { NfcParserService } from 'app/providers/nfc/nfcparser.service';
+
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
   ],
   imports: [
     BrowserModule,
@@ -43,14 +45,15 @@ import { GlobalErrorHandler } from 'app/providers/errorHandler.service';
     AppRoutingModule
   ],
   providers: [
-    ElectronService,
-    { provide: APP_BASE_HREF, useValue: '/' },
-    NfcService,
+    ElectronService, 
+    { provide: APP_BASE_HREF, useValue: '/' }, 
+    NfcService, 
     NfcParserService,
+    NdefFormaterService
     // disable error handler for now
     // @TODO: to clean.
     // {
-    //   provide: ErrorHandler,
+    //   provide: ErrorHandler, 
     //   useClass: GlobalErrorHandler
     // },
     // LoggingService

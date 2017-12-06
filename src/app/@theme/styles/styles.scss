@@ -152,7 +152,7 @@ $nb-themes: nb-register-theme((
     /**
     * @Global
     */
-    layout-bg: #f9fafb, //@TODO: more contrasted
+    layout-bg: #b9b9b9, //@TODO: more contrasted
     // layout-window-mode-bg: #f9fafb,
 
     // global colors
@@ -201,7 +201,7 @@ $nb-themes: nb-register-theme((
 }
 .nb-theme-default .btn-outline-divided-group .btn:not(.active) {
   // background-color: #dddddd;
-  opacity: 0.8;
+  opacity: 0.7;
   background: #3d518c; // primary
 }
 .input-group-addon,
@@ -237,6 +237,7 @@ select.form-control:not([size]):not([multiple]) {
 .alert-success { }
 .alert {
   background: #eee !important;
+  word-wrap: break-word;
 }
 .form-control-label {
   color: nb-theme(form-control-text-primary-color);

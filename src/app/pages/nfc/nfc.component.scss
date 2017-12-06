@@ -29,3 +29,16 @@
 .green {
   color: nb-theme(color-success);
 }
+
+.r-w-mode label.btn {
+  cursor: default !important;
+  // opacity: 0.7;
+  color: #dddddd;
+}
+.r-w-mode label.btn .active {
+  opacity: 1;
+}
+.table {
+  table-layout: fixed;
+  word-wrap: break-word;
+}

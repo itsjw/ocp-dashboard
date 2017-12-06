@@ -6,14 +6,14 @@
       <nb-card-header>
           <div class="row">
               <div class="col-4">
-                <i class="fa fa-circle" aria-hidden="true" [ngClass]="{'orange': nfc?.reader?.status==loading||err, 'red': nfc?.reader?.status=='off', 'green': nfc?.reader?.status=='on'}"></i>
+                <i class="fa fa-circle" aria-hidden="true" [ngClass]="{'orange': nfc?.reader?.status=='loading'||'err', 'red': nfc?.reader?.status=='off', 'green': nfc?.reader?.status=='on'}"></i>
                 Lecteur NFC<small *ngIf="nfc?.reader?.name">({{ nfc.reader.name }})</small>
               </div>
               <div class="col-4">
                 Action:
                 <small>{{ currentAction }}</small>
               </div>
-              <div class="col-4">
+              <div class="col-4" *ngIf="readOrWriteMode=='write'">
                 Nombre de carte écrites:
                 <small>{{ writtenCardsCount }}</small>
               </div>
@@ -22,13 +22,13 @@
       <nb-card-body>
         <div class="row">
           <div class="col-4">
-            <label>Mode: </label><br />
-            <div [(ngModel)]="readOrWriteStatus" ngbRadioGroup
-                 class="btn-group btn-divided-group btn-outline-divided-group btn-group-full-width col-md-6">
-              <label ngbButtonLabel class="btn btn-outline-primary">
+            <label>Mode: {{ readOrWriteMode }} </label><br />
+            <div [(ngModel)]="readOrWriteMode" ngbRadioGroup
+                 class="btn-group btn-divided-group btn-outline-divided-group btn-group-full-width col-md-6 r-w-mode">
+              <label ngbButtonLabel class="btn btn-outline-primary" (click)="writeCard()">
                 <input ngbButton type="radio" value="write"> Write
               </label>
-              <label ngbButtonLabel class="btn btn-outline-primary">
+              <label ngbButtonLabel class="btn btn-outline-primary" (click)="readCard()">
                 <input ngbButton type="radio" value="read"> Read
               </label>
             </div>
@@ -41,7 +41,11 @@
               </select>
             </div>
           </div>
-          <div class="col-4"></div>
+          <!-- Action buttons
+          <div class="col-4">
+              <button type="button" class="btn btn-primary" (click)="readCard()">Read card</button>
+              <button type="button" class="btn btn-primary" (click)="writeCard()">Write card</button>              
+          </div> -->
         </div>
 
       </nb-card-body>
@@ -49,41 +53,55 @@
 
 
 
-<p *ngFor="let alert of alerts" [@fadeIn]="''">
-  <ngb-alert [type]="alert.type" (close)="closeAlert(alert)" class="fade animate-show animate-hide">{{ alert.message }}</ngb-alert>
-</p>
-<p>
-  <button type="button" class="btn btn-primary" (click)="reset()">Reset</button>
+<p *ngFor="let alert of alerts; let i = index" [@fadeIn]="''">
+  <ngb-alert [type]="alert.type" (close)="closeAlert(alert)" class="fade animate-show animate-hide">{{ i }} - {{ alert.message }}</ngb-alert>
 </p>
 
+<!-- Standard record -->
+<table class="table" *ngIf="cardContent?.pin">
+  <thead>
+    <tr>
+      <th>Card Uid</th>
+      <th>PIN Code</th>
+      <th>Security Transport Company</th>
+      <th>Bank Name</th>
+      <th>App Version</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">{{ cardContent.pin  | decryptPin }}</th>
+      <td>{{ cardContent.pin | decryptPin }}</td>
+      <td>{{ cardContent.securityTransportCompany }}</td>
+      <td>{{ cardContent.bankName }}</td>
+      <td>{{ cardContent.appVersion }}</td>
+    </tr>
+  </tbody>
+</table>
 
+<!-- Unknown format card message -->
+<div *ngIf="cardMessageUnknowFormatArray?.length > 0">
+  <table class="table" *ngFor="let cardRecordUnknowFormat of cardMessageUnknowFormatArray">
+    <thead>
+      <tr>
+        <!-- <th *ngFor="key of cardRecordUnknowFormat | getKeys">{{entry.key}}</th> -->
+        <th class="span4"></th>      
+        <th class="span2">Language</th>
+        <th class="span2">Content</th>
+        <th class="span4"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="span4"></td>
+        <td scope="row" class="span2">{{ cardRecordUnknowFormat.language }}</td>
+        <td class="span2">{{ cardRecordUnknowFormat.content }}</td>
+        <td class="span4"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-
-    <!-- <div class="row">
-      <div class="col-lg-12">
-        <ngx-hero-buttons></ngx-hero-buttons>
-      </div>
-      <div class="col-md-12 col-lg-12 col-xxxl-6">
-        <ngx-shape-buttons></ngx-shape-buttons>
-        <ngx-action-groups></ngx-action-groups>
-        <ngx-labeled-actions-group></ngx-labeled-actions-group>
-
-        <div class="row">
-          <div class="col-lg-5">
-            <ngx-dropdown-buttons></ngx-dropdown-buttons>
-            <ngx-icon-buttons></ngx-icon-buttons>
-          </div>
-          <div class="col-lg-7">
-            <ngx-button-groups></ngx-button-groups>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-12 col-lg-12 col-xxxl-6">
-        <ngx-size-buttons></ngx-size-buttons>
-        <ngx-default-buttons></ngx-default-buttons>
-        <ngx-block-level-buttons></ngx-block-level-buttons>
-      </div>
-    </div> -->
 
   </nb-card-body>
 </nb-card>
