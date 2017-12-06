@@ -107,7 +107,7 @@ $nb-themes: nb-register-theme((
     // shadow: ,
     // sidebar-shadow: none,
     header-shadow: 0 -2px 12px 0 #929292,
-
+    footer-shadow: 0 -2px 12px 0 #929292,
 
     layout-padding: 1.25rem 1.25rem 0.25rem,
     /**
@@ -172,7 +172,7 @@ $nb-themes: nb-register-theme((
 
     // padding: 1rem
     radius: 0.25rem,
-    shadow: 0px 0px 4px 1px #efefef,
+    // shadow: 0px 0px 4px 1px #efefef,
 
   ), default, default); // let's leave it as default
 
@@ -194,15 +194,26 @@ $nb-themes: nb-register-theme((
 * Forms overwrites
 */
 
-// ngbradiogroup (radio toggle btn)
+// buttons
 .btn, button {
   padding: 0.375rem 0.75rem !important;
   cursor: pointer !important;
 }
-.nb-theme-default .btn-outline-divided-group .btn:not(.active) {
+
+// ngbradiogroup (radio toggle btn)
+.nb-theme-default .btn-outline-divided-group .btn:not(.active),
+.nb-theme-default .btn-outline-toggle-group .btn:not(.active) {
   // background-color: #dddddd;
-  opacity: 0.7;
+  opacity: 0.6;
   background: #3d518c; // primary
+  color: #888888 !important;
+}
+.nb-theme-default .btn-outline-divided-group .btn:hover,
+.nb-theme-default .btn-outline-toggle-group .btn:hover {
+  // background-color: #dddddd;
+  // opacity: 0.6;
+  // background: #3d518c; // primary
+  color: #cccccc !important;
 }
 .input-group-addon,
 .form-control {

@@ -24,12 +24,12 @@
           <div class="col-4">
             <label>Mode: {{ readOrWriteMode }} </label><br />
             <div [(ngModel)]="readOrWriteMode" ngbRadioGroup
-                 class="btn-group btn-divided-group btn-outline-divided-group btn-group-full-width col-md-6 r-w-mode">
-              <label ngbButtonLabel class="btn btn-outline-primary" (click)="writeCard()">
-                <input ngbButton type="radio" value="write"> Write
+                  class="btn-group btn-toggle-group btn-outline-toggle-group btn-group-full-width btn-toggle-radio-group col-md-6 r-w-mode">
+              <label ngbButtonLabel class="btn btn-outline-primary">
+                <input ngbButton type="radio" value="write" (click)="writeCard()"> Write
               </label>
-              <label ngbButtonLabel class="btn btn-outline-primary" (click)="readCard()">
-                <input ngbButton type="radio" value="read"> Read
+              <label ngbButtonLabel class="btn btn-outline-primary">
+                <input ngbButton type="radio" value="read" (click)="readCard()"> Read
               </label>
             </div>
           </div>
@@ -44,7 +44,7 @@
           <!-- Action buttons
           <div class="col-4">
               <button type="button" class="btn btn-primary" (click)="readCard()">Read card</button>
-              <button type="button" class="btn btn-primary" (click)="writeCard()">Write card</button>              
+              <button type="button" class="btn btn-primary" (click)="writeCard()">Write card</button>
           </div> -->
         </div>
 
@@ -85,7 +85,7 @@
     <thead>
       <tr>
         <!-- <th *ngFor="key of cardRecordUnknowFormat | getKeys">{{entry.key}}</th> -->
-        <th class="span4"></th>      
+        <th class="span4"></th>
         <th class="span2">Language</th>
         <th class="span2">Content</th>
         <th class="span4"></th>
