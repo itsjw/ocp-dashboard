@@ -14,16 +14,17 @@ export class NfcService {
   readOrWriteMode: any;
   nfc: any;
   data: Observable<{}>;
+  noReaderFoundTimeoutDuration: number;
 
   constructor(public NfcParser: NfcParserService, public ndefFormater: NdefFormaterService) {
     console.log('NfcService loaded');
   }
 
   init() {
-    
+
     // NFC Library
     const nfc = new NFC();
-    
+
     // observable object
     this.nfc = {
       description: 'nfcGlobalStatus',
@@ -58,13 +59,15 @@ export class NfcService {
       },
       writeResult: {}
     }
-    
+
     this.readSize = 700;
+    const noReaderFoundTimeoutDuration = 10000; // 10 seconds
 
     this.data = new Observable(observer => {
       console.log('INFO:', 'nfc object observable initialized');
 
-      console.log('NfcParserService', NfcParserService)
+      this.noReaderFoundTimeout(observer, noReaderFoundTimeoutDuration);
+
       try {
 
       /**
@@ -73,13 +76,13 @@ export class NfcService {
       nfc.on('reader', async reader => {
 
         this.initReader(reader, observer);
-        
+
         /**
          * Card async/await
          */
         reader.on('card', async card => {
         // console.log('READORWRITE', this.readOrWriteMode)
-          
+
           // card object
           this.nfc.card.object = card
           // console.log('card', card);
@@ -92,8 +95,8 @@ export class NfcService {
 
               try {
                 /**
-                 *  @TODO: 
-                 *  - Check the record length by reading block 4 
+                 *  @TODO:
+                 *  - Check the record length by reading block 4
                  *  - Once we know the length, set the reader method to read only what we need
                  */
 
@@ -120,7 +123,7 @@ export class NfcService {
                   writeResult: null
                 }
                 observer.next(this.action);
-                
+
               } catch (error) {
                 // card reading error
                 this.errorHandler('EReaderRead', error, reader, card, observer);
@@ -133,7 +136,7 @@ export class NfcService {
             if (this.readOrWriteMode === 'write') {
               try {
                 if (this.valueToWrite) {
-                  const valueToWrite = this.ndefFormater.getBufferForText(JSON.stringify(this.valueToWrite), 'en');     
+                  const valueToWrite = this.ndefFormater.getBufferForText(JSON.stringify(this.valueToWrite), 'en');
                   const writeStatus = await reader.write(4, valueToWrite); // starts writing in block 4, continues to 5 and 6 in order to write the whole record
                   console.log('writeStatus', writeStatus);
 
@@ -147,7 +150,7 @@ export class NfcService {
                 this.errorHandler('EReaderWrite', error, reader, card, observer);
               }
             }
-              
+
           observer.next(this.nfc);
         });
 
@@ -196,7 +199,7 @@ export class NfcService {
   }
   errorHandler(errorType, error, reader, card, observer) {
     console.error('(' + errorType + ') Something wrong happened in nfc.service:', error);
-    
+
     // Default object for any error
     // We need to add:
     //    - action: read, write, init...
@@ -225,12 +228,12 @@ export class NfcService {
     }
 
     switch (errorType) {
-      
+
       // it's a read card error
       case 'EReaderRead':
         // We were trying to read the card while this error happened
         this.nfcStatus$.action.cardRead = true;
-        
+
         // We try to read the card one more time
         reader.read(4, this.readSize).then(
           readResult => {
@@ -255,7 +258,7 @@ export class NfcService {
             observer.next(this.nfcStatus$);
         })
       break;
-      
+
       // It's a write card error
       case 'EReaderWrite':
         this.nfcStatus$.action.cardWrite = true;
@@ -278,9 +281,15 @@ export class NfcService {
       default:
         // observer.next(this.nfcStatus$);
       break;
-        
+
     }
 
+  }
 
+  noReaderFoundTimeout(observer, noReaderFoundTimeoutDuration) {
+    setTimeout(() => {
+      this.nfc.status = 'noReaderFound';
+      observer.next(this.nfc);
+    }, noReaderFoundTimeoutDuration)
   }
 }

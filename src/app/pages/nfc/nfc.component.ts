@@ -1,6 +1,6 @@
 import { ToasterConfigService } from './../../providers/toaster.service';
 import { NfcService } from './../../providers/nfc/nfc.service';
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, NgZone, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
 import { ToasterService, ToasterConfig, Toast, BodyOutputType } from 'angular2-toaster';
@@ -30,7 +30,7 @@ export class NfcComponent implements OnInit {
   cardContent: any;
   cardContentObject: { pin: any; securityTransportCompany: any; bankName: any; appVersion: any; };
   cardMessageUnknowFormatArray: any;
-  
+
   toasterConfig: ToasterConfig;
   nfcThread: Subscription;
   currentAction: string;
@@ -48,7 +48,8 @@ export class NfcComponent implements OnInit {
 
   private backup: Array<IAlert>;
 
-  constructor(public nfcS: NfcService, private toasterService: ToasterService, public toasterConfigService: ToasterConfigService) {
+  constructor(public nfcS: NfcService, private toasterService: ToasterService, public toasterConfigService: ToasterConfigService,
+    public ngZone: NgZone, private ref: ChangeDetectorRef) {
     console.log('NFC page loaded.');
 
   }
@@ -116,15 +117,22 @@ export class NfcComponent implements OnInit {
    * @memberof NfcComponent
    */
   nfcManager(nfcService$) {
-    
+
     // Hey, something new happened !
     this.nfc = nfcService$;
-    console.log('Got a new value:', nfcService$);
+    console.log('Got a new value:', nfcService$, this.nfc);
+
+    // ??!
+    // https://stackoverflow.com/questions/38445670/angular-2-view-will-not-update-after-variable-change-in-subscribe
+    this.ngZone.run(() => {
+      this.nfc = this.nfc;
+    });
+    this.ref.markForCheck();
 
     // What's new happened ? card read, card write ? Reader appears, reader disappeared ?
     switch (nfcService$.description) {
       case 'action':
-      
+
         //@TODO: reinit the nfc reader when a successful action is done
 
         // We've got a new action, let's reset the view in order to show the steps following the action to the user
@@ -132,10 +140,10 @@ export class NfcComponent implements OnInit {
 
         // It's a card read
         if (nfcService$.cardHasBeenRead) {
-          
+
           this.alerts.push({ type: 'light', message: 'A card has been found (uid:' + nfcService$.cardUid + ' - type:' + nfcService$.cardType + ')'});
 
-          // SUCCESS: Card has been read and ndef message has been parsed successfully 
+          // SUCCESS: Card has been read and ndef message has been parsed successfully
           if (nfcService$.success) {
             this.alerts.push({ type: 'success', message: 'Read a card successfully'});
             this.alerts.push({ type: 'light', message: 'DEBUG: ' + JSON.stringify(nfcService$.readResult.ndefMessage)});
@@ -150,10 +158,10 @@ export class NfcComponent implements OnInit {
             // Our object is valid (contains our props: eg. pin, transportname, bank etc...), we can work with it.
             if (resultAsJSONIsVerified.success) {
               this.alerts.push({ type: 'success', message: 'Parsed card content successfully. See the result below.' });
-              
+
               // Fill the cardContent object, it will show the grid with these infos to the user
               this.cardContent = cardMessageArray[0];
-            
+
             // result does not contains our pre-defined properties
             } else if (resultAsJSONIsVerified.error) {
               console.log('ISVALIDJSON&UNKNOWNPROPS')
@@ -183,7 +191,7 @@ export class NfcComponent implements OnInit {
 
       case 'error':
         console.log('error', nfcService$.errorType, nfcService$.errorDesc);
-                    
+
         // Parse error
         if (nfcService$.errorDesc === 'Not a WELL_KNOWN text record') {
 
@@ -201,10 +209,10 @@ export class NfcComponent implements OnInit {
             // Our object is valid, we can work with it.
             if (resultAsJSONIsVerified.success) {
               this.alerts.push({ type: 'success', message: 'Parsed card content successfully. See the result below.' });
-              
+
               // Fill the cardContent object, it will show the grid with these infos to the user
               this.cardContent = resultFromJSONParseTry.result;
-            
+
             // result is a valid JSON object, but does not contains our pre-defined properties
             } else if (resultAsJSONIsVerified.error) {
               console.log('ISVALIDJSON with UNKNOWNPROPS', resultFromJSONParseTry.result)
@@ -256,7 +264,7 @@ export class NfcComponent implements OnInit {
    * @method getValueToWrite
    * @description Build a serialized JSON object containing all the values to write on the card
    * @example       let data = {pin: "U2FsdGVkX19Buxk/sTWmdXFrfCgNsfmxJOqTvoJxW4kHS7+phRSqIegFb//zXmREjZLsaEK2RqIpBMyihlUuA48V6FQGvLyCPz948b5zv3Y=", securityTransportCompany: "Masdria", bankName: "The Saudi British Bank", appVersion: "1.0.0"};
-   * 
+   *
    * @memberof NfcComponent
    */
   getValueToWrite() {
@@ -271,16 +279,16 @@ export class NfcComponent implements OnInit {
   writeCard() {
     this.readOrWriteMode = 'write';
     this.nfcS.setMode(this.readOrWriteMode);
-    this.nfcS.setValueToWrite(this.getValueToWrite());    
+    this.nfcS.setValueToWrite(this.getValueToWrite());
   }
 
     /**
      * @method tryRegExpJSONParsing
-     * @description @methodtryJSONParsing failed, 
+     * @description @methodtryJSONParsing failed,
      *      we try to regexp the string by searching what could be between braces {*}
      *      if it succeed, we try to parse JSON
-     *  
-     * @param {any} resultString 
+     *
+     * @param {any} resultString
      * @returns {object} '(result as json) + status'
      * @memberof NfcComponent
      */
@@ -315,14 +323,14 @@ export class NfcComponent implements OnInit {
             result: null
           }
         } else {
-          // SUCCESS: all properties are here        
+          // SUCCESS: all properties are here
           return {
             success: true,
             error: false,
             result: resultAsJson
           }
         }
-        
+
       }
 
     }
@@ -331,7 +339,7 @@ export class NfcComponent implements OnInit {
      * @description resets the view (empty it) by settings object bound to view to default
      *      - message array
      *      - cardContent object
-     * 
+     *
      * @memberof NfcComponent
      */
     resetViewObjects() {
