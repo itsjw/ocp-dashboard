@@ -6,11 +6,17 @@
       <nb-card-header>
           <div class="row">
               <div class="col-4">
-                <i class="fa fa-circle" aria-hidden="true" [ngClass]="{'orange': nfc?.reader?.status=='loading'||'err', 'red': nfc?.reader?.status=='off'||nfc?.reader?.status=='noReaderFound', 'green': nfc?.reader?.status=='on'}"></i>
+                <i class="fa fa-circle" aria-hidden="true" 
+                    [ngClass]="{
+                      'orange': nfc?.globalStatus?.reader?.status=='loading'||'err', 
+                      'red': nfc?.globalStatus?.reader?.status=='off'||nfc?.globalStatus?.reader?.status=='noReaderFound', 
+                      'green': nfc?.globalStatus?.reader?.status=='on'
+                    }"></i>
                 Lecteur NFC
-                <small *ngIf="nfc?.reader?.name; else noReaderFound">({{ nfc.reader.name }})</small>
-                <ng-template #noReaderFound><small>(No reader found)</small></ng-template>
-                {{ nfc?.reader?.status}}
+                <small *ngIf="nfc?.globalStatus?.reader?.name">({{ nfc.globalStatus.reader.name }})</small>
+                <!-- <small *ngIf="nfc?.reader?.name; else noReaderFound">({{ nfc.reader.name }})</small>
+                <ng-template #noReaderFound><small>(No reader found)</small></ng-template> -->
+                {{ nfc?.globalStatus?.reader?.status}}
               </div>
               <div class="col-4">
                 Action:

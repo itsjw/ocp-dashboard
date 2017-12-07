@@ -7,7 +7,8 @@ import { NdefFormaterService } from './ndefformater.service'
 
 @Injectable()
 export class NfcService {
-  nfcStatus$: { description: string; action: { cardRead: boolean; cardWrite: boolean; readerInit: boolean; global: boolean; }; cardUid: () => any; cardType: () => any; success: boolean; error: boolean; errorType: any; errorDesc: any; readResult: any; writeResult: any; };
+  nfcStatusInit$: any;
+  nfcStatus$: any;
   readSize: number;
   action: any;
   valueToWrite: any;
@@ -25,50 +26,54 @@ export class NfcService {
     // NFC Library
     const nfc = new NFC();
 
-    // observable object
-    this.nfc = {
-      description: 'nfcGlobalStatus',
-      reader: {
-        object: null, // full nfc-csc lib object
-        status: 'loading', // on/off/err/loading(def)
-        name: null // reader full name
+    // Main observable init object
+    this.nfcStatusInit$ = {
+      description: 'action', // action, error, init
+      action: {
+        cardRead: false, // 
+        cardWrite: false,
+        readerInit: false,
+        global: false
       },
-      card: {
-        object: null, // full nfc-csc lib object
-        status: null, // on/off/err
-      },
-      error: null,
-      end : null
-    };
-
-    /**
-     * Splitted object
-     */
-    this.action = {
-      cardHasBeenRead: false,
-      cardHasBeenWritten: false,
-      success: null,
-      error: null,
-      cardUid: null,
-      cardType: null,
+      // cardUid: function() { if (typeof card !== 'undefined') { return card.uid }},
+      // cardType:  function() { if (typeof card !== 'undefined') { return card.type }},
+      success: false, //
+      error: false, //
+      errorType: null,
+      errorDesc: null,
       readResult: {
         rawData: null,
         ndefMessage: null,
         utf8: null,
         hex: null
       },
-      writeResult: {}
+      writeResult: null,
+      globalStatus: {
+        reader: {
+          object: null, // full nfc-csc lib object
+          status: 'loading', // on/off/err/loading(def)
+          name: null // reader full name shorthand
+        },
+        card: {
+          object: null, // full nfc-csc lib object
+          status: null, // on/off/err
+        }
+      }
     }
 
     this.readSize = 700;
     const noReaderFoundTimeoutDuration = 10000; // 10 seconds
 
+
     this.data = new Observable(observer => {
       console.log('INFO:', 'nfc object observable initialized');
 
-      this.noReaderFoundTimeout(observer, noReaderFoundTimeoutDuration);
+      // Push default nfcStatus obj to subscriber to avoid undefined props in any cases.
+      observer.next(this.nfcStatusInit$);
 
-      try {
+      // this.noReaderFoundTimeout(observer, noReaderFoundTimeoutDuration);
+
+      // try {
 
       /**
        * Reader async/await
@@ -81,11 +86,9 @@ export class NfcService {
          * Card async/await
          */
         reader.on('card', async card => {
-        // console.log('READORWRITE', this.readOrWriteMode)
-
+          
           // card object
-          this.nfc.card.object = card
-          // console.log('card', card);
+          this.nfcStatus$.globalStatus.card.object = card        
 
             /**
              * Read Mode
@@ -101,28 +104,38 @@ export class NfcService {
                  */
 
                 const rawData = await reader.read(4, this.readSize); // BlockSize, length to read
-                console.log('cardData', rawData);
+                // console.log('INFO (serv): Found a new card and read it.');
 
                 const parsedData = this.NfcParser.parseNdef(rawData);
                 // console.log('parsedCardData', parsedData);
-
-                this.action = {
-                  description: 'action',
-                  cardHasBeenRead: true,
-                  cardHasBeenWritten: false,
+                
+                this.nfcStatus$ = {
+                  description: 'action', //
+                  action: {
+                    cardRead: true, // 
+                    cardWrite: false,
+                    readerInit: false,
+                    global: false
+                  },
+                  // cardUid: function() { if (typeof card !== 'undefined') { return card.uid }},
+                  // cardType:  function() { if (typeof card !== 'undefined') { return card.type }},
                   cardUid: card.uid,
-                  cardType: card.type,
-                  success: true,
-                  error: false,
+                  cardType:  card.type,
+                  success: true, //
+                  error: false, //
+                  errorType: null,
+                  errorDesc: null,
                   readResult: {
                     rawData: parsedData.rawData,
                     ndefMessage: parsedData.ndefMessage,
                     utf8: parsedData.utf8,
                     hex: parsedData.hex
                   },
-                  writeResult: null
+                  writeResult: null,
+                  globalStatus: this.nfcStatusInit$.globalStatus
                 }
-                observer.next(this.action);
+
+                observer.next(this.nfcStatus$);
 
               } catch (error) {
                 // card reading error
@@ -136,11 +149,15 @@ export class NfcService {
             if (this.readOrWriteMode === 'write') {
               try {
                 if (this.valueToWrite) {
-                  const valueToWrite = this.ndefFormater.getBufferForText(JSON.stringify(this.valueToWrite), 'en');
+                  console.log(Buffer.concat)
+                  console.log('this.valueToWrite', this.valueToWrite)
+
+                  const valueToWrite = this.ndefFormater.getBufferForText('1234', 'en');
+                  // const valueToWrite = this.ndefFormater.getBufferForText(JSON.stringify(this.valueToWrite), 'en');
+                  console.log('valueToWrite', valueToWrite)
                   const writeStatus = await reader.write(4, valueToWrite); // starts writing in block 4, continues to 5 and 6 in order to write the whole record
                   console.log('writeStatus', writeStatus);
 
-                  this.nfc.card.status = 'written';
                 } else {
                   throw new Error ('value to write is not defined!')
                 }
@@ -151,13 +168,13 @@ export class NfcService {
               }
             }
 
-          observer.next(this.nfc);
+          // observer.next(this.nfc);
         });
 
         reader.on('end', () => {
           // reader status OFF
-          this.nfc.status = 'off'
-          observer.next(this.nfc);
+          this.nfcStatus$.globalStatus.reader.status = 'off'
+          observer.next(this.nfcStatus$);
         });
 
         reader.on('error', async error => {
@@ -165,11 +182,11 @@ export class NfcService {
           this.errorHandler('EReader', error, reader, null, observer);
         });
 
-    });
-  } catch (error) {
-    // global error
-    this.errorHandler('Eglobal', error, null, null, observer);
- }
+      });
+  //   } catch (error) {
+  //     // global error
+  //     this.errorHandler('Eglobal', error, null, null, observer);
+  // }
 
     // return function () {
     //   console.log('disposed');
@@ -185,21 +202,58 @@ export class NfcService {
     this.valueToWrite = value;
   }
 
+
+  /**
+   * @method initReader
+   * @description Feeds init obj with reader object and pass it to subscriber
+   *    On the component side, it allows us to know a reader is available, and show the according template to the user
+   * 
+   * @param {any} reader obj
+   * @param {any} observer obj
+   * @memberof NfcService
+   */
   initReader(reader, observer) {
+
+    // describe obj as "init"
+    this.nfcStatusInit$.description = 'init';
+    
     // reader object
-    this.nfc.reader.object = reader;
+    this.nfcStatusInit$.globalStatus.reader.object = reader;
 
     // reader status ON/OFF/ERR
-    reader.name !== null ? this.nfc.reader.status = 'on' : this.nfc.reader.status = 'off';
+    reader.name !== null ? this.nfcStatusInit$.globalStatus.reader.status = 'on' : this.nfcStatusInit$.globalStatus.reader.status = 'off';
 
     // reader name
-    this.nfc.reader.name = reader.name;
+    this.nfcStatusInit$.globalStatus.reader.name = reader.name;
 
-    observer.next(this.nfc);
+    observer.next(this.nfcStatusInit$);
+    
+    // init obj becomes our main obj as soon as init is done
+    this.nfcStatus$ = this.nfcStatusInit$;
   }
-  errorHandler(errorType, error, reader, card, observer) {
-    console.error('(' + errorType + ') Something wrong happened in nfc.service:', error);
 
+
+  /**
+   * @method errorHandler
+   * @description Handles any error caught by reader.reader & reader.write
+   * 
+   * @param {any} errorType switch/case error list 'EReaderRead, EReaderWrite, EReader, EGlobal'
+   * @param {any} error any error throwed by nfc-pcsc lib: 'eg. Not a WELL_KNOWN text record, Could not get uid...'
+   * @param {any} reader reader obj
+   * @param {any} card card obj
+   * @param {any} observer observer obj
+   * @memberof NfcService
+   */
+  errorHandler(errorType, error, reader, card, observer) {
+    console.error('INFO (serv):  An error occurred (' + errorType + ')', error);
+
+    // @TODO: Getter, Setter
+    // const cardUid = function() { if (typeof card !== 'undefined') { return card.uid }};
+    // const cardType = function() { if (typeof card !== 'undefined') { return card.type }};
+    // const cardUid = () => typeof card !== 'undefined' ? card.uid : null;
+    // const cardType = () => typeof card !== 'undefined' ? card.type : null;
+
+     
     // Default object for any error
     // We need to add:
     //    - action: read, write, init...
@@ -212,8 +266,9 @@ export class NfcService {
         readerInit: false,
         global: false
       },
-      cardUid: function() { if (typeof card !== 'undefined') { return card.uid }},
-      cardType:  function() { if (typeof card !== 'undefined') { return card.type }},
+      // @TODO: Getter, Setter
+      // cardUid: card.uid,
+      // cardType: card.type,
       success: false,
       error: true,
       errorType: errorType,
@@ -224,27 +279,32 @@ export class NfcService {
         utf8: null,
         hex: null
       },
-      writeResult: null
+      writeResult: null,
+      globalStatus: this.nfcStatusInit$.globalStatus
     }
+    
 
     switch (errorType) {
 
       // it's a read card error
       case 'EReaderRead':
+      console.log('EReaderRead exception handler')
         // We were trying to read the card while this error happened
         this.nfcStatus$.action.cardRead = true;
 
         // We try to read the card one more time
         reader.read(4, this.readSize).then(
           readResult => {
+            if (error === 'Not a WELL_KNOWN text record') {
+              this.nfcStatus$.readResult = {
+                rawData: readResult,
+                utf8: readResult.toString('utf8'),
+                hex: readResult.toString('hex')
+              };
+              this.nfcStatus$.cardUid = card.uid;
+              this.nfcStatus$.cardType = card.type;
 
-            this.nfcStatus$.readResult = {
-              rawData: readResult,
-              utf8: readResult.toString('utf8'),
-              hex: readResult.toString('hex')
-            };
-
-            if (error !== 'Not a WELL_KNOWN text record') {
+            } else {
               // parse result to get data as raw, ndef, utf8 & hex.
               const parsedData = this.NfcParser.parseNdef(readResult);
               this.nfcStatus$.readResult.ndefMessage = parsedData.ndefMessage;
@@ -279,7 +339,8 @@ export class NfcService {
 
 
       default:
-        // observer.next(this.nfcStatus$);
+        console.log('INFO (serv):', 'Caught an unlisted error, transmitting it to event handler.' )
+        observer.next(this.nfcStatus$);
       break;
 
     }
@@ -288,8 +349,8 @@ export class NfcService {
 
   noReaderFoundTimeout(observer, noReaderFoundTimeoutDuration) {
     setTimeout(() => {
-      this.nfc.status = 'noReaderFound';
-      observer.next(this.nfc);
+      this.nfcStatus$.globalStatus.reader.status = 'noReaderFound';
+      observer.next(this.nfcStatus$);
     }, noReaderFoundTimeoutDuration)
   }
 }
