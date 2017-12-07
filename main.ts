@@ -9,6 +9,8 @@ if (serve) {
   require('electron-reload')(__dirname, {
   });
 }
+// @ADD for testing purposes
+require('electron-debug')({showDevTools: true});
 
 function createWindow() {
 
@@ -27,9 +29,10 @@ function createWindow() {
   win.loadURL('file://' + __dirname + '/index.html');
 
   // Open the DevTools.
-  if (serve) {
+  // @DISABLED ifserve
+  // if (serve) {
     win.webContents.openDevTools();
-  }
+  // }
 
   // Emitted when the window is closed.
   win.on('closed', () => {
