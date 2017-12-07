@@ -165,7 +165,7 @@ export class NfcComponent implements OnInit {
      * It's a card read
      */
     if (nfcService$.action.cardRead) {
-
+      
       // MESSAGE: A card has been found alert
       this.alerts.push({ type: 'light', message: 'A card has been found ' + this.getCardInfo(nfcService$) });
       

@@ -361,9 +361,13 @@ export class NfcService {
         // We were trying to read the card while this error happened
         this.nfcStatus$.action.cardRead = true;
 
+        console.log('Retrying a card read...');
+
         // We try to read the card one more time
         reader.read(4, this.readSize).then(
           readResult => {
+          console.log('Read a card, result:', readResult);
+        
             if (error === 'Not a WELL_KNOWN text record') {
               this.nfcStatus$.readResult = {
                 rawData: readResult,
@@ -379,8 +383,10 @@ export class NfcService {
               this.nfcStatus$.readResult.ndefMessage = parsedData.ndefMessage;
             }
 
+            console.log('Sending to the sub:', this.nfcStatus$)
             // if we succeed we pass the action obj to the observer containing the readResult
-            observer.next(this.nfcStatus$);
+            let ob = observer.next(this.nfcStatus$);
+            console.log('Observer sent to the subs:', ob)
         },
           err => {
             // if it fails, we pass the status without readResult
