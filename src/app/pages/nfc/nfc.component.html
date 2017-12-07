@@ -20,12 +20,22 @@
               </div>
               <div class="col-4">
                 Action:
-                <small>{{ currentAction }}</small>
+                <small>
+                    <span *ngIf="nfc?.action?.cardRead">Reading a card...</span>
+                    <span *ngIf="nfc?.action?.cardWrite">Writing a card...</span>
+                    <span *ngIf="nfc?.action?.init">Initializing reader...</span>
+                </small>
               </div>
               <div class="col-4" *ngIf="readOrWriteMode=='write'">
                 Nombre de carte écrites:
                 <small>{{ writtenCardsCount }}</small>
               </div>
+                <div class="col-2" *ngIf="nfc?.cardUid && readOrWriteMode=='read'">
+                    <h6>Card UID <span class="badge badge-info">{{ nfc.cardUid }}</span></h6>
+                </div>
+                <div class="col-2" *ngIf="nfc?.cardType && readOrWriteMode=='read'">
+                  <h6>Card Type <span class="badge badge-info">{{ nfc.cardType }}</span></h6>          
+                </div>
             </div>
           </nb-card-header>
       <nb-card-body>
@@ -56,15 +66,18 @@
               <button type="button" class="btn btn-primary" (click)="writeCard()">Write card</button>
           </div> -->
         </div>
+        <!-- <hr /> -->
+        <!-- <div class="row" *ngIf="nfc?.cardUid && nfc?.cardType">
+          <div class="col-4">
+              <h6>Card UID <span class="badge badge-info">{{ nfc?.cardUid }}</span></h6>
+          </div>
+          <div class="col-4">
+            <h6>Card Type <span class="badge badge-info">{{ nfc?.cardType }}</span></h6>          
+          </div>
+        </div> -->
 
       </nb-card-body>
     </nb-card>
-
-
-
-<p *ngFor="let alert of alerts; let i = index" [@fadeIn]="''">
-  <ngb-alert [type]="alert.type" (close)="closeAlert(alert)" class="fade animate-show animate-hide">{{ i }} - {{ alert.message }}</ngb-alert>
-</p>
 
 <!-- Standard record -->
 <table class="table" *ngIf="cardContent?.pin">
@@ -110,6 +123,13 @@
     </tbody>
   </table>
 </div>
+
+<!-- Alerts messages -->
+<p *ngFor="let alert of alerts | reverseArr; let i = index" [@fadeIn]="''">
+  <ngb-alert [type]="alert.type" (close)="closeAlert(alert)" class="fade animate-show animate-hide">{{ alerts.length - i }} - {{ alert.message }}</ngb-alert>
+</p>
+
+
 
 
   </nb-card-body>

@@ -13,7 +13,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { DecryptPinPipe } from 'app/pipes/decrypt-pin.pipe';
 import { GetKeysPipe } from 'app/pipes/get-keys.pipe';
-
+import { ReverseArrPipe } from 'app/pipes/reverse-arr.pipe';
 
 @NgModule({
   imports: [
@@ -25,7 +25,8 @@ import { GetKeysPipe } from 'app/pipes/get-keys.pipe';
   declarations: [
     NfcComponent,
     DecryptPinPipe,
-    GetKeysPipe
+    GetKeysPipe,
+    ReverseArrPipe
   ],
   providers: [
     {

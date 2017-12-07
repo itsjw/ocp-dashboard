@@ -9,23 +9,23 @@ export class NdefFormaterService {
     console.log('NdefFormater loaded');
     console.log(ndefTool)
   }
-
+  // @TODO: clean comments.
   getBufferForText(payloadText, language, blockSize: number = 4) { // blockSize = 4 (ntag 21x)
-    console.log('GETBUFFERFORTEXT', payloadText, language)
+    // console.log('GETBUFFERFORTEXT', payloadText, language)
     let textRecord = ndefTool.Utils.createTextRecord(payloadText, language); 
-    console.log(textRecord)
+    // console.log(textRecord)
     
     let message = new ndefTool.Message([textRecord]);
     // console.log('MESSAGE:', message, Buffer.from(message), message.toString())
 
     let messageAsByteArray = message.toByteArray();
-    console.log(message)
-    console.log(messageAsByteArray)
+    // console.log(message)
+    // console.log(messageAsByteArray)
     
     let hexaPayloadLength = '0x'+`${(messageAsByteArray.length).toString(16)}`
     
-    console.log('NDEFUtil:', hexaPayloadLength)
-    console.log('NDEFUtil:', this.toBuffer(messageAsByteArray))
+    // console.log('NDEFUtil:', hexaPayloadLength)
+    // console.log('NDEFUtil:', this.toBuffer(messageAsByteArray))
     
   /** ???Doc
       04:04         0xD1   This byte is the **NDEF Record Header**, and indicates that this is
@@ -55,16 +55,16 @@ export class NdefFormaterService {
     
     const messageBuf = this.toBuffer(messageAsByteArray);
 
-    console.log([header, messageBuf, ME])
-    console.log(Buffer.isBuffer(header))
-    console.log(Buffer.isBuffer(messageBuf))
-    console.log(Buffer.isBuffer(ME))
+    // console.log([header, messageBuf, ME])
+    // console.log(Buffer.isBuffer(header))
+    // console.log(Buffer.isBuffer(messageBuf))
+    // console.log(Buffer.isBuffer(ME))
 
     var totalLength = header.length + messageBuf.length + ME.length;
-    console.log(totalLength)
+    // console.log(totalLength)
     var concatBuffer = Buffer.concat([header, messageBuf, ME], totalLength);
-    console.log(concatBuffer)
-    console.log(concatBuffer.length)
+    // console.log(concatBuffer)
+    // console.log(concatBuffer.length)
     
     // const finalByteArray = this.fillBuffer(concatBuffer, 4) // 4 Bytes blockSize
     if (concatBuffer.length % blockSize !== 0) { // we need to writes blocks (eg. ntag21x = 4 Bytes) - we fill with 0x00
@@ -76,7 +76,7 @@ export class NdefFormaterService {
         var concatBuffer = Buffer.concat([concatBuffer, filler], totalLength);
       }
     }
-    console.log('NDEFUtil:', concatBuffer, "(concat)");
+    // console.log('NDEFUtil:', concatBuffer, "(concat)");
     // console.log('NDEFUtil:', finalByteArray, '(concat)');
   
     const buffer = this.toBuffer(concatBuffer);
@@ -89,7 +89,7 @@ export class NdefFormaterService {
     // console.log('NDEFUtil:', reversedBuffer, '(reversedBuffer)');
   
     // return reversedBuffer;
-    console.log('ISBUFFER', Buffer.isBuffer(buffer));
+    // console.log('ISBUFFER', Buffer.isBuffer(buffer));
     return buffer;
   }
   

@@ -47,7 +47,11 @@ export class NfcService {
         utf8: null,
         hex: null
       },
-      writeResult: null,
+      writeResult: {
+        valueWritten: null,
+        valueWrittenAsBuffer: null,
+        writeStatus: null
+      },
       globalStatus: {
         reader: {
           object: null, // full nfc-csc lib object
@@ -131,7 +135,11 @@ export class NfcService {
                     utf8: parsedData.utf8,
                     hex: parsedData.hex
                   },
-                  writeResult: null,
+                  writeResult: {
+                    valueWritten: this.valueToWrite,
+                    valueWrittenAsBuffer: null,
+                    writeStatus: null
+                  },
                   globalStatus: this.nfcStatusInit$.globalStatus
                 }
 
@@ -143,20 +151,77 @@ export class NfcService {
               }
             }
 
-            /**
-             * Write Mode
-             */
+           /**
+            * Write Mode
+            * ----------
+            *
+            * Note: if it throws an error complaining Buffer prototype wants a list of buffer, or certains types of value it's probably because of this:
+            * 
+            * Buffer.from(data) conversion is required as we are using Buffer.js in the 
+            * Electron environement instead of node legacy Buffer implementation
+            * Buffer.js doc: https://github.com/feross/buffer
+            * 
+            * @MODIFIED dist/node_modules/nfc-pcsc/dist/reader.js
+            *     line: 562
+            *	+		const packet = Buffer.concat([packetHeader, Buffer.from(data)]);
+            * - 	const packet = Buffer.concat([packetHeader, data]);
+            */
+
             if (this.readOrWriteMode === 'write') {
               try {
                 if (this.valueToWrite) {
-                  console.log(Buffer.concat)
-                  console.log('this.valueToWrite', this.valueToWrite)
+                  // const valueToWrite = this.ndefFormater.getBufferForText('1234', 'en');
+                  const valueToWriteAsBuffer = this.ndefFormater.getBufferForText(JSON.stringify(this.valueToWrite), 'en');
+                  const writeStatus = await reader.write(4, valueToWriteAsBuffer); // starts writing in block 4, continues to 5 and 6 in order to write the whole record
 
-                  const valueToWrite = this.ndefFormater.getBufferForText('1234', 'en');
-                  // const valueToWrite = this.ndefFormater.getBufferForText(JSON.stringify(this.valueToWrite), 'en');
-                  console.log('valueToWrite', valueToWrite)
-                  const writeStatus = await reader.write(4, valueToWrite); // starts writing in block 4, continues to 5 and 6 in order to write the whole record
-                  console.log('writeStatus', writeStatus);
+                  // @TODO: move these in a template file (IFace?)
+                  this.nfcStatus$ = {
+                    description: 'action', //
+                    action: {
+                      cardRead: false, // 
+                      cardWrite: true,
+                      readerInit: false,
+                      global: false
+                    },
+                    // cardUid: function() { if (typeof card !== 'undefined') { return card.uid }},
+                    // cardType:  function() { if (typeof card !== 'undefined') { return card.type }},
+                    cardUid: null,
+                    cardType: null,
+                    success: true, //
+                    error: false, //
+                    errorType: null,
+                    errorDesc: null,
+                    readResult: {
+                      rawData: null,
+                      ndefMessage: null,
+                      utf8: null,
+                      hex: null
+                    },
+                    writeResult: {
+                      valueWritten: this.valueToWrite,
+                      valueWrittenAsBuffer: valueToWriteAsBuffer,
+                      writeStatus: writeStatus
+                    },
+                    globalStatus: this.nfcStatusInit$.globalStatus
+                  }
+  
+                  /**
+                   * writeStatus is an array of boolean returned when all blocks have tried to be written by the lib
+                   * eg. "1234, en" as an Uint8Array(16) = [3, 11, 209, 1, 7, 84, 2, 101, 110, 49, 50, 51, 52, 254, 0, 0]
+                   * writeStatus (4) [true, true, true, true] => [3, 11, 209, 1] = true, [7, 84, 2, 101] = true, [110, 49, 50, 51] = true, [52, 254, 0, 0] = true
+                   */
+                  // console.log('writeStatus', writeStatus);
+
+                    // ERROR: At least one block could not be written properly
+                    if (writeStatus.indexOf(false) > -1) {
+                      this.nfcStatus$.success = false;
+                      this.nfcStatus$.error = true;
+                      this.nfcStatus$.errorDesc = 'At least one block could not be writtent properly';
+                      observer.next(this.nfcStatus$);
+                    // SUCCESS: Everything went as expected
+                    } else {
+                      observer.next(this.nfcStatus$);
+                    }
 
                 } else {
                   throw new Error ('value to write is not defined!')
@@ -279,7 +344,11 @@ export class NfcService {
         utf8: null,
         hex: null
       },
-      writeResult: null,
+      writeResult: {
+        valueWritten: null,
+        valueWrittenAsBuffer: null,
+        writeStatus: null
+      },
       globalStatus: this.nfcStatusInit$.globalStatus
     }
     

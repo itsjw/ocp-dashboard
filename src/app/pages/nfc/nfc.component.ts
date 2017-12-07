@@ -41,7 +41,7 @@ export class NfcComponent implements OnInit {
   clients: any[];
   selectedClient: { id: number; name: string; };
 
-  readOrWriteMode: string = 'write'; // 'read' or 'write'
+  readOrWriteMode: string = 'read'; // 'read' or 'write'
 
 
   @Input()
@@ -60,7 +60,7 @@ export class NfcComponent implements OnInit {
 
 
   ngAfterViewInit () {
-
+    
     if (this.readOrWriteMode === 'write') { this.writeCard() }
 
     this.nfcS.init(); // init service (finds a reader, wait for a card.)
@@ -161,7 +161,9 @@ export class NfcComponent implements OnInit {
 
     //@TODO: reinit the nfc reader (check if reader.name) when a successful action is done
 
-    // It's a card read
+    /**
+     * It's a card read
+     */
     if (nfcService$.action.cardRead) {
 
       // MESSAGE: A card has been found alert
@@ -181,14 +183,14 @@ export class NfcComponent implements OnInit {
 
         // Our object is valid (contains our props: eg. pin, transportname, bank etc...), we can work with it.
         if (resultAsJSONIsVerified.success) {
-          this.alerts.push({ type: 'success', message: 'Parsed card content successfully. See the result below.' });
+          this.alerts.push({ type: 'success', message: 'Parsed card content successfully. See the result above.' });
 
           // Fill the cardContent object, it will show the grid with these infos to the user
           this.cardContent = cardMessageArray[0];
 
         // result does not contains our pre-defined properties
         } else if (resultAsJSONIsVerified.error) {
-          this.alerts.push({ type: 'warning', message: 'The card contains readable information but not the one we expect. You can find the card parsing below anyway.' });              
+          this.alerts.push({ type: 'warning', message: 'The card contains readable information but not the one we expect. You can find the card parsing above anyway.' });              
           this.cardMessageUnknowFormatArray = cardMessageArray;
         }
 
@@ -217,7 +219,7 @@ export class NfcComponent implements OnInit {
             const resultAsJSONIsVerified = this.verifyObjectValidity(resultFromJSONParseTry.result);
             // Our object is valid, we can work with it.
             if (resultAsJSONIsVerified.success) {
-              this.alerts.push({ type: 'success', message: 'Parsed card content successfully. See the result below.' });
+              this.alerts.push({ type: 'success', message: 'Parsed card content successfully. See the result above.' });
 
               // Fill the cardContent object, it will show the grid with these infos to the user
               this.cardContent = resultFromJSONParseTry.result;
@@ -236,8 +238,25 @@ export class NfcComponent implements OnInit {
       }
     } // cardRead
 
+    /**
+     * It's a card write
+     */
+    if (nfcService$.action.cardWrite) {
+      // SUCCESS
+      if (nfcService$.success) {
+        console.log(nfcService$.writeResult.valueWritten.pin)
+        let bank = nfcService$.writeResult.valueWritten.bankName;
+        let securityTransportCompany = nfcService$.writeResult.valueWritten.securityTransportCompany;
+        let appVersion = nfcService$.writeResult.valueWritten.appVersion;
 
-    if (nfcService$.action.cardRead) {
+        this.alerts.push({ 
+          type: 'success', 
+          message: 'Wrote the card successfully (bank:' + bank + ' - transport company:' + securityTransportCompany + ' - appVersion:' + appVersion + ')'});        
+      }
+      // ERROR
+      if (nfcService$.error) {
+        this.alerts.push({ type: 'danger', message: 'Something went wrong while writing card. Maybe the card was moved while writing or the card is locked or broken ?' });
+      }
       // console.log(nfcService$.writeResult)
     }
 
@@ -249,7 +268,7 @@ export class NfcComponent implements OnInit {
         this.showToast('error', 'Error', nfcService$.errorType + ' - ' + nfcService$.errorDesc);
       }
       // this.nfc.error = null;
-      this.nfcS.init();
+      // this.nfcS.init();
     }
 
   }
@@ -298,6 +317,7 @@ export class NfcComponent implements OnInit {
     this.readOrWriteMode = 'write';
     this.nfcS.setMode(this.readOrWriteMode);
     this.nfcS.setValueToWrite(this.getValueToWrite());
+
   }
 
   /**

@@ -261,6 +261,7 @@ module.exports = {
   "devtool": "source-map",
   "externals": {
     "electron": "require('electron')",
+    "buffer": "require('Buffer')",
     // "buffer": "require('buffer')",
     "child_process": "require('child_process')",
     "crypto": "require('crypto')",
