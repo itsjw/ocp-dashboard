@@ -9,6 +9,7 @@ import { ThemeModule } from '../../@theme/theme.module';
 import { NfcComponent } from './nfc.component';
 import { from } from 'rxjs/observable/from';
 import { LoggingService } from 'app/providers/logging.service';
+
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { DecryptPinPipe } from 'app/pipes/decrypt-pin.pipe';

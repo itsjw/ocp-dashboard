@@ -1,6 +1,15 @@
 <toaster-container [toasterconfig]="config"></toaster-container>
 <nb-card>
-  <nb-card-header>Lecteur/Ecriveur de carte NFC</nb-card-header>
+  <nb-card-header>
+    <div class="row">
+    <div class="col-8">
+      NFC Card Reader/Writer
+    </div>
+    <div class="col-4 color-primary-txt text-right" *ngIf="loading">
+      <i class="fa fa-circle-o-notch  fa-spin fa-fw"></i>
+    </div>
+    </div>
+  </nb-card-header>
   <nb-card-body>
     <nb-card>
       <nb-card-header>
@@ -12,14 +21,14 @@
                       'red': nfc?.globalStatus?.reader?.status=='off'||nfc?.globalStatus?.reader?.status=='noReaderFound', 
                       'green': nfc?.globalStatus?.reader?.status=='on'
                     }"></i>
-                Lecteur NFC
+                NFC reader
                 <small *ngIf="nfc?.globalStatus?.reader?.name">({{ nfc.globalStatus.reader.name }})</small>
                 <!-- <small *ngIf="nfc?.reader?.name; else noReaderFound">({{ nfc.reader.name }})</small>
                 <ng-template #noReaderFound><small>(No reader found)</small></ng-template> -->
-                {{ nfc?.globalStatus?.reader?.status}}
+                <!-- {{ nfc?.globalStatus?.reader?.status}} -->
               </div>
               <div class="col-4">
-                Action:
+                <!-- Action: -->
                 <small>
                     <span *ngIf="nfc?.action?.cardRead">Reading a card...</span>
                     <span *ngIf="nfc?.action?.cardWrite">Writing a card...</span>
@@ -27,15 +36,16 @@
                 </small>
               </div>
               <div class="col-4" *ngIf="readOrWriteMode=='write'">
-                Nombre de carte écrites:
+                Cards written:
                 <small>{{ writtenCardsCount }}</small>
               </div>
-                <div class="col-2" *ngIf="nfc?.cardUid && readOrWriteMode=='read'">
-                    <h6>Card UID <span class="badge badge-info">{{ nfc.cardUid }}</span></h6>
-                </div>
-                <div class="col-2" *ngIf="nfc?.cardType && readOrWriteMode=='read'">
-                  <h6>Card Type <span class="badge badge-info">{{ nfc.cardType }}</span></h6>          
-                </div>
+              <!-- card uid & type -->
+              <div class="col-2" *ngIf="nfc?.cardUid && readOrWriteMode=='read'">
+                  <h6>Card UID <span class="badge badge-primary">{{ nfc.cardUid }}</span></h6>
+              </div>
+              <div class="col-2" *ngIf="nfc?.cardType && readOrWriteMode=='read'">
+                <h6>Card Type <span class="badge badge-primary">{{ nfc.cardType }}</span></h6>          
+              </div>
             </div>
           </nb-card-header>
       <nb-card-body>
@@ -52,35 +62,48 @@
               </label>
             </div>
           </div>
+
           <div class="col-4">
             <div class="form-group">
               <label>Client: </label><br />
-              <select [(ngModel)]="selectedClient" class="form-control">
+              <select [(ngModel)]="selectedClient" class="form-control" (ngModelChange)="modelChanged($event)">
                 <option *ngFor="let client of clients" [ngValue]="client">{{client.name}}</option>
               </select>
             </div>
           </div>
-          <!-- Action buttons
           <div class="col-4">
-              <button type="button" class="btn btn-primary" (click)="readCard()">Read card</button>
-              <button type="button" class="btn btn-primary" (click)="writeCard()">Write card</button>
-          </div> -->
+            <div class="form-group">
+              <label>Bank name: </label><br />
+              <input type="text" class="form-control" placeholder="Bank name" [(ngModel)]="cardContent.bankName" name="bankName" (ngModelChange)="modelChanged($event)">
+            </div>
+          </div>
+
         </div>
-        <!-- <hr /> -->
-        <!-- <div class="row" *ngIf="nfc?.cardUid && nfc?.cardType">
-          <div class="col-4">
-              <h6>Card UID <span class="badge badge-info">{{ nfc?.cardUid }}</span></h6>
+
+        <div class="row">
+          <div class="col-4 offset-4">
+            <form>
+              <div class="form-group">
+                <label>Pin code: </label><br />
+                <input type="text" class="form-control" placeholder="Pin Code" [(ngModel)]="cardContent.pin" name="pin" disabled>
+              </div>
+            </form>
           </div>
           <div class="col-4">
-            <h6>Card Type <span class="badge badge-info">{{ nfc?.cardType }}</span></h6>          
+            <form>
+              <div class="form-group">
+                <label>App version: </label><br />
+                <input type="text" class="form-control" placeholder="App version" [(ngModel)]="cardContent.appVersion" name="appVersion" disabled>
+              </div>
+            </form>
           </div>
-        </div> -->
+        </div>
 
       </nb-card-body>
     </nb-card>
 
 <!-- Standard record -->
-<table class="table" *ngIf="cardContent?.pin">
+<table class="table" *ngIf="cardContent">
   <thead>
     <tr>
       <th>Card Uid</th>

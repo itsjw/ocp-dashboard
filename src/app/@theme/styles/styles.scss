@@ -274,6 +274,22 @@ select.form-control:not([size]):not([multiple]) {
   }
 }
 
+.badge-primary {
+  // background: nb-theme(color-primary); // @TODO:FIX - Find why the nb-theme is not loaded yet here
+  background: #3d518c;
+}
+.badge {
+  padding: 0.35em 0.4em;
+  font-weight: 500;
+}
+.color-primary-bg {
+  // background: nb-theme(color-primary); // @TODO:FIX - Find why the nb-theme is not loaded yet here
+  background: #3d518c;
+}
+.color-primary-txt {
+  // color:nb-theme(color-primary) !important;
+  color: #3d518c;
+}
 /**
 nbcard
     box-shadow: 0px 0px 4px 1px #efefef;

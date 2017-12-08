@@ -1,5 +1,7 @@
 import { ToasterConfigService } from './../../providers/toaster.service';
 import { NfcService } from './../../providers/nfc/nfc.service';
+import { PrinterService } from 'app/providers/printer.service';
+
 import { Component, OnInit, Input, NgZone, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -27,8 +29,15 @@ import { trigger, state, style, transition, animate, keyframes } from '@angular/
 })
 
 export class NfcComponent implements OnInit {
-  cardContent: any;
-  cardContentObject: { pin: any; securityTransportCompany: any; bankName: any; appVersion: any; };
+  // cardContent: any;
+  // cardContentModel: { pin: any; securityTransportCompany: any; bankName: any; appVersion: any; };
+  cardContentModel = {
+    pin: '',
+    securityTransportCompany: '',
+    bankName: '',
+    appVersion: ''
+  }
+  cardContent = this.cardContentModel;
   cardMessageUnknowFormatArray: any;
 
   toasterConfig: ToasterConfig;
@@ -41,8 +50,9 @@ export class NfcComponent implements OnInit {
   clients: any[];
   selectedClient: { id: number; name: string; };
 
-  readOrWriteMode: string = 'read'; // 'read' or 'write'
+  readOrWriteMode = 'read'; // 'read' or 'write'
 
+  loading = false;
 
   @Input()
   public alerts: Array<IAlert> = [];
@@ -50,7 +60,7 @@ export class NfcComponent implements OnInit {
   private backup: Array<IAlert>;
 
   constructor(public nfcS: NfcService, private toasterService: ToasterService, public toasterConfigService: ToasterConfigService,
-    public ngZone: NgZone, private ref: ChangeDetectorRef) {
+    public ngZone: NgZone, private ref: ChangeDetectorRef, public printer: PrinterService) {
     console.log('NFC page loaded.');
 
   }
@@ -60,20 +70,16 @@ export class NfcComponent implements OnInit {
 
 
   ngAfterViewInit () {
-    
+
+    this.printer.printText('12345678910');
+
     if (this.readOrWriteMode === 'write') { this.writeCard() }
 
     this.nfcS.init(); // init service (finds a reader, wait for a card.)
     this.nfcS.setMode(this.readOrWriteMode); // set read/write mode to default @init
 
 
-    this.cardContentObject = {
-      pin: null,
-      securityTransportCompany: null,
-      bankName: null,
-      appVersion: null
-    }
-    this.cardContent = this.cardContentObject;
+
     /**
      * Init:
      * 0- Get client list
@@ -82,8 +88,8 @@ export class NfcComponent implements OnInit {
     // @TODO: tcp request here
     setTimeout(() => {
       this.clients = [
-        {id: 1, name: 'a'},
-        {id: 2, name: 'b'},
+        {id: 1, name: 'Masdria'},
+        {id: 2, name: 'Loomis'},
         {id: 3, name: 'c'},
         {id: 4, name: 'd'},
         {id: 5, name: 'e'}
@@ -150,12 +156,12 @@ export class NfcComponent implements OnInit {
       case 'error':
         console.log('INFO (comp): An error happened:', nfcService$.errorDesc);
 
-      // We've got a new action (even if it's an error we have a message to show)
-      // Let's reset the view in order to show the steps following the action to the user
-      this.resetViewObjects();
+        // We've got a new action (even if it's an error we have a message to show)
+        // Let's reset the view in order to show the steps following the action to the user
+        this.resetViewObjects();
 
-      this.alerts.push({ type: 'danger', message: 'An error occurred: ' + nfcService$.errorDesc });
-      
+        this.alerts.push({ type: 'danger', message: 'An error occurred: ' + nfcService$.errorDesc });
+        
       break;
     }
 
@@ -164,7 +170,14 @@ export class NfcComponent implements OnInit {
     /**
      * It's a card read
      */
-    if (nfcService$.action.cardRead) {
+
+    // We've found a card but didn't processed it yet
+    if (nfcService$.action.cardRead && !nfcService$.complete) {
+      this.loading = true;
+    }
+
+    // We processed the card read and need to update the layout
+    if (nfcService$.action.cardRead && nfcService$.complete) {
       
       // MESSAGE: A card has been found alert
       this.alerts.push({ type: 'light', message: 'A card has been found ' + this.getCardInfo(nfcService$) });
@@ -179,14 +192,14 @@ export class NfcComponent implements OnInit {
 
         // Our record should be the first: index 0
         // We verify if our object contains all the properties we defined (in this.cardContent)
-        const resultAsJSONIsVerified = this.verifyObjectValidity(cardMessageArray[0]);
+        const resultAsJSONIsVerified = this.verifyObjectValidity(JSON.parse(cardMessageArray[0].content));
 
         // Our object is valid (contains our props: eg. pin, transportname, bank etc...), we can work with it.
         if (resultAsJSONIsVerified.success) {
           this.alerts.push({ type: 'success', message: 'Parsed card content successfully. See the result above.' });
 
           // Fill the cardContent object, it will show the grid with these infos to the user
-          this.cardContent = cardMessageArray[0];
+          this.cardContent = JSON.parse(cardMessageArray[0].content);
 
         // result does not contains our pre-defined properties
         } else if (resultAsJSONIsVerified.error) {
@@ -236,27 +249,32 @@ export class NfcComponent implements OnInit {
         }
 
       }
+      // Job is done:
+      this.loading = false;
     } // cardRead
 
     /**
      * It's a card write
      */
-    if (nfcService$.action.cardWrite) {
+    if (nfcService$.action.cardWrite  && nfcService$.complete) {
       // SUCCESS
       if (nfcService$.success) {
         console.log(nfcService$.writeResult.valueWritten.pin)
         let bank = nfcService$.writeResult.valueWritten.bankName;
         let securityTransportCompany = nfcService$.writeResult.valueWritten.securityTransportCompany;
         let appVersion = nfcService$.writeResult.valueWritten.appVersion;
+        let pin = nfcService$.writeResult.valueWritten.pin;
 
         this.alerts.push({ 
           type: 'success', 
-          message: 'Wrote the card successfully (bank:' + bank + ' - transport company:' + securityTransportCompany + ' - appVersion:' + appVersion + ')'});        
+          message: 'Wrote the card successfully (bank:' + bank + ' - transport company:' + securityTransportCompany + ' - appVersion:' + appVersion + ' - pin:' + pin + ')'});        
       }
       // ERROR
       if (nfcService$.error) {
         this.alerts.push({ type: 'danger', message: 'Something went wrong while writing card. Maybe the card was moved while writing or the card is locked or broken ?' });
       }
+      // Job is done:
+      this.loading = false;
       // console.log(nfcService$.writeResult)
     }
 
@@ -304,20 +322,40 @@ export class NfcComponent implements OnInit {
    */
   getValueToWrite() {
     // const valueToWrite = {pin: 'U2FsdGVkX19Buxk/sTWmdXFrfCgNsfmxJOqTvoJxW4kHS7+phRSqIegFb//zXmREjZLsaEK2RqIpBMyihlUuA48V6FQGvLyCPz948b5zv3Y=', securityTransportCompany: 'Masdria', bankName: 'The Saudi British Bank', appVersion: '1.0.0'};
-    const valueToWrite = {pin: "U2FsdGVkX19Buxk/sTWmdXFrfCgNsfmxJOqTvoJxW4kHS7+phRSqIegFb//zXmREjZLsaEK2RqIpBMyihlUuA48V6FQGvLyCPz948b5zv3Y=", securityTransportCompany: "Masdria", bankName: "The Saudi British Bank", appVersion: "1.0.0"};
-    
+    const fakePin = (Math.floor(1000 + Math.random() * 9000)).toString();
+    const valueToWrite = {
+      // pin: this.cardContent.pin || this.cardContentModel.pin,
+      pin: fakePin,
+      // securityTransportCompany: this.cardContent.securityTransportCompany || this.cardContentModel.securityTransportCompany,
+      securityTransportCompany: this.selectedClient.name,
+      bankName: this.cardContent.bankName || this.cardContentModel.bankName,
+      // appVersion: this.cardContent.appVersion || this.cardContentModel.appVersion,
+      appVersion: '1.0.0',
+    }
     return valueToWrite;
   }
-
+  modelChanged(ev) {
+    // set the value to write using appriopriate getter
+    this.nfcS.setValueToWrite(this.getValueToWrite());
+  }
   readCard() {
+    // reset the view at any switch read/write
+    this.resetViewObjects();
+
+    // switch mode to 'read'
     this.readOrWriteMode = 'read';
     this.nfcS.setMode(this.readOrWriteMode);
   }
   writeCard() {
+    // reset the view at any switch read/write    
+    this.resetViewObjects();
+
+    // switch mode to 'write'
     this.readOrWriteMode = 'write';
     this.nfcS.setMode(this.readOrWriteMode);
-    this.nfcS.setValueToWrite(this.getValueToWrite());
 
+    // set the value to write using appriopriate getter
+    this.nfcS.setValueToWrite(this.getValueToWrite());
   }
 
   /**
@@ -350,7 +388,9 @@ export class NfcComponent implements OnInit {
   }
 
   verifyObjectValidity(resultAsJson) {
-    for (const property in this.cardContentObject) {
+    // console.log(resultAsJson.content)
+    // let resultAsJson = JSON.parse(resultAsJson.content)
+    for (const property in this.cardContentModel) {
 
       if (!resultAsJson.hasOwnProperty(property)) {
         console.log('INFO comp): Did not found property: "' + property + '" in object:', resultAsJson);
@@ -382,7 +422,7 @@ export class NfcComponent implements OnInit {
    */
   resetViewObjects() {
     this.alerts = [];
-    this.cardContent = this.cardContentObject;
+    this.cardContent = this.cardContentModel;
     this.cardMessageUnknowFormatArray = [];
   }
 

@@ -39,6 +39,7 @@ export class NfcService {
       // cardType:  function() { if (typeof card !== 'undefined') { return card.type }},
       success: false, //
       error: false, //
+      complete: true,
       errorType: null,
       errorDesc: null,
       readResult: {
@@ -90,6 +91,39 @@ export class NfcService {
          * Card async/await
          */
         reader.on('card', async card => {
+          this.nfcStatus$ = {
+            description: 'action', //
+            action: {
+              cardRead: true, // 
+              cardWrite: false,
+              readerInit: false,
+              global: false
+            },
+            // cardUid: function() { if (typeof card !== 'undefined') { return card.uid }},
+            // cardType:  function() { if (typeof card !== 'undefined') { return card.type }},
+            cardUid: null,
+            cardType: null,
+            success: true, //
+            error: false, //
+            complete: false,
+            errorType: null,
+            errorDesc: null,
+            readResult: {
+              rawData: null,
+              ndefMessage: null,
+              utf8: null,
+              hex: null
+            },
+            writeResult: {
+              valueWritten: null,
+              valueWrittenAsBuffer: null,
+              writeStatus: null
+            },
+            globalStatus: this.nfcStatusInit$.globalStatus
+          }
+          observer.next(this.nfcStatus$);
+      
+          console.log('>>>>>GOT CARD!')
           
           // card object
           this.nfcStatus$.globalStatus.card.object = card        
@@ -113,34 +147,47 @@ export class NfcService {
                 const parsedData = this.NfcParser.parseNdef(rawData);
                 // console.log('parsedCardData', parsedData);
                 
-                this.nfcStatus$ = {
-                  description: 'action', //
-                  action: {
-                    cardRead: true, // 
-                    cardWrite: false,
-                    readerInit: false,
-                    global: false
-                  },
-                  // cardUid: function() { if (typeof card !== 'undefined') { return card.uid }},
-                  // cardType:  function() { if (typeof card !== 'undefined') { return card.type }},
-                  cardUid: card.uid,
-                  cardType:  card.type,
-                  success: true, //
-                  error: false, //
-                  errorType: null,
-                  errorDesc: null,
-                  readResult: {
-                    rawData: parsedData.rawData,
-                    ndefMessage: parsedData.ndefMessage,
-                    utf8: parsedData.utf8,
-                    hex: parsedData.hex
-                  },
-                  writeResult: {
-                    valueWritten: this.valueToWrite,
-                    valueWrittenAsBuffer: null,
-                    writeStatus: null
-                  },
-                  globalStatus: this.nfcStatusInit$.globalStatus
+                // this.nfcStatus$ = {
+                //   description: 'action', //
+                //   action: {
+                //     cardRead: true, // 
+                //     cardWrite: false,
+                //     readerInit: false,
+                //     global: false
+                //   },
+                //   // cardUid: function() { if (typeof card !== 'undefined') { return card.uid }},
+                //   // cardType:  function() { if (typeof card !== 'undefined') { return card.type }},
+                //   cardUid: card.uid,
+                //   cardType:  card.type,
+                //   success: true, //
+                //   error: false, //
+                //   complete: true,
+                //   errorType: null,
+                //   errorDesc: null,
+                //   readResult: {
+                //     rawData: parsedData.rawData,
+                //     ndefMessage: parsedData.ndefMessage,
+                //     utf8: parsedData.utf8,
+                //     hex: parsedData.hex
+                //   },
+                //   writeResult: {
+                //     valueWritten: null,
+                //     valueWrittenAsBuffer: null,
+                //     writeStatus: null
+                //   },
+                //   globalStatus: this.nfcStatusInit$.globalStatus
+                // }
+                
+                this.nfcStatus$.action.cardRead = true;
+                this.nfcStatus$.action.cardUid = card.uid;
+                this.nfcStatus$.action.cardType = card.type;
+                this.nfcStatus$.action.cardType = card.type;
+                this.nfcStatus$.complete = true;
+                this.nfcStatus$.readResult = {
+                  rawData: parsedData.rawData,
+                  ndefMessage: parsedData.ndefMessage,
+                  utf8: parsedData.utf8,
+                  hex: parsedData.hex
                 }
 
                 observer.next(this.nfcStatus$);
@@ -189,6 +236,7 @@ export class NfcService {
                     cardType: null,
                     success: true, //
                     error: false, //
+                    complete: true,
                     errorType: null,
                     errorDesc: null,
                     readResult: {
@@ -336,6 +384,7 @@ export class NfcService {
       // cardType: card.type,
       success: false,
       error: true,
+      complete: true,
       errorType: errorType,
       errorDesc: error,
       readResult: {

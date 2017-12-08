@@ -282,7 +282,8 @@ module.exports = {
     "url": "require('url')",
     "util": "require('util')",
     "zlib": "require('zlib')",
-    "nfc-pcsc": "require('nfc-pcsc')"
+    "nfc-pcsc": "require('nfc-pcsc')",
+    "printer": "require('printer')"
   },
   "resolve": {
     "extensions": [

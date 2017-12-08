@@ -6,7 +6,10 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class DecryptPinPipe implements PipeTransform {
 
   transform(value: any, args?: any): any {
-    return 1234;
+    if (value) {
+      return 1234;
+    } else {
+      return '';
+    }
   }
-
 }

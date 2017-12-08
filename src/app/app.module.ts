@@ -1,4 +1,4 @@
-import { LoggingService } from './providers/logging.service';
+
 import 'zone.js/dist/zone-mix';
 import 'reflect-metadata';
 import 'polyfills';
@@ -24,7 +24,8 @@ import { NfcService } from './providers/nfc/nfc.service';
 import { GlobalErrorHandler } from 'app/providers/errorHandler.service';
 import { NdefFormaterService } from 'app/providers/nfc/ndefformater.service';
 import { NfcParserService } from 'app/providers/nfc/nfcparser.service';
-
+import { PrinterService } from './providers/printer.service';
+import { LoggingService } from './providers/logging.service';
 
 @NgModule({
   declarations: [
@@ -49,7 +50,8 @@ import { NfcParserService } from 'app/providers/nfc/nfcparser.service';
     { provide: APP_BASE_HREF, useValue: '/' }, 
     NfcService, 
     NfcParserService,
-    NdefFormaterService
+    NdefFormaterService,
+    PrinterService
     // disable error handler for now
     // @TODO: to clean.
     // {
