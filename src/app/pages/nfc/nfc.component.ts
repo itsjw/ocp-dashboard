@@ -2,13 +2,15 @@ import { ToasterConfigService } from './../../providers/toaster.service';
 import { NfcService } from './../../providers/nfc/nfc.service';
 import { PrinterService } from 'app/providers/printer.service';
 
-import { Component, OnInit, Input, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Input, NgZone, ChangeDetectorRef, AfterContentInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
 import { ToasterService, ToasterConfig, Toast, BodyOutputType } from 'angular2-toaster';
 import 'style-loader!angular2-toaster/toaster.css';
 
 import { trigger, state, style, transition, animate, keyframes } from '@angular/animations';
+
+import { environment } from '../../../environments';
 
 @Component({
   selector: 'ngx-nfc',
@@ -28,9 +30,7 @@ import { trigger, state, style, transition, animate, keyframes } from '@angular/
   ]
 })
 
-export class NfcComponent implements OnInit {
-  // cardContent: any;
-  // cardContentModel: { pin: any; securityTransportCompany: any; bankName: any; appVersion: any; };
+export class NfcComponent implements AfterContentInit {
   cardContentModel = {
     pin: '',
     securityTransportCompany: '',
@@ -41,10 +41,8 @@ export class NfcComponent implements OnInit {
   cardMessageUnknowFormatArray: any;
 
   toasterConfig: ToasterConfig;
-  nfcThread: Subscription;
   currentAction: string;
   nfcStatusLoading: boolean;
-  nfc: any; // global obj
   writtenCardsCount: number;
 
   clients: any[];
@@ -52,33 +50,54 @@ export class NfcComponent implements OnInit {
 
   readOrWriteMode = 'read'; // 'read' or 'write'
 
+  DEBUG = true;
   loading = false;
 
   @Input()
   public alerts: Array<IAlert> = [];
 
-  private backup: Array<IAlert>;
-
-  constructor(public nfcS: NfcService, private toasterService: ToasterService, public toasterConfigService: ToasterConfigService,
-    public ngZone: NgZone, private ref: ChangeDetectorRef, public printer: PrinterService) {
-    console.log('NFC page loaded.');
-
+  nfc = {
+    reader: {
+      name: null,
+      status: 'LOADING', // ON, OFF, ERROR, LOADING - default as 'LOADING'
+      // object: null // useless - map & pass only what we need ?
+    },
+    card: {
+      uid: null,
+      status: 'OFF', // ON, OFF, PROCESSING - default as 'OFF'
+    },
+    action: {
+      type: null, // CARD_READ, CARD_READ - default as null
+      status: null, // SUCCESS, ERROR, COMPLETE - default as null
+      READ_RESULT: {
+          rawData: null,
+          ndefMessage: null,
+          utf8: null,
+          hex: null
+      },
+      WRITE_RESULT: {
+        valueWritten: null,
+        valueWrittenAsBuffer: null,
+        writeStatus: null
+      },
+    }
   }
 
-  ngOnInit() {
+  constructor(
+    public nfcS: NfcService,
+    private toasterService: ToasterService, public toasterConfigService: ToasterConfigService,
+    public ngZone: NgZone, private ref: ChangeDetectorRef,
+    public printer: PrinterService) {
+      console.log('NFC page loaded.');
   }
 
+  ngAfterContentInit () {
 
-  ngAfterViewInit () {
+    // this.printer.printText('12345678910');
 
-    this.printer.printText('12345678910');
+    // if (this.readOrWriteMode === 'write') { this.writeCard() }
 
-    if (this.readOrWriteMode === 'write') { this.writeCard() }
-
-    this.nfcS.init(); // init service (finds a reader, wait for a card.)
-    this.nfcS.setMode(this.readOrWriteMode); // set read/write mode to default @init
-
-
+    // this.nfcS.setMode(this.readOrWriteMode); // set read/write mode to default @init
 
     /**
      * Init:
@@ -103,213 +122,72 @@ export class NfcComponent implements OnInit {
 
     this.currentAction = '-';
 
-
     /**
-     * Main NFC Thread
-     */
-    this.nfcThread = this.nfcS.data.subscribe(
-      nfcService$ =>
-        this.nfcManager(nfcService$),
-        // console.log('nfcService$', nfcService$),
-      error => console.log('e', error),
-      () => console.log('nfc end.')
-    );
-    
-  }
-
-
-  /**
-   * @method ncfManager
-   * @description manages values received from the main observable *nfcThread*
-   *
-   * @param {any} globalNfcObject 'nfc global object'
-   * @memberof NfcComponent
-   */
-  nfcManager(nfcService$) {
-
-    // Hey, something new happened !
-    this.nfc = nfcService$;
-    console.log('INFO (comp): Caught a new event (nfcService$):', nfcService$);
-
-    // ??!
-    // https://stackoverflow.com/questions/38445670/angular-2-view-will-not-update-after-variable-change-in-subscribe
-    // this.ngZone.run(() => {
-    //   this.nfc = this.nfc;
-    // });
-    // this.ref.markForCheck();
-
-
-    // We've got a new action, let's reset the view in order to show the steps following the action to the user
-    this.resetViewObjects();
-
-
-    // What's new happened ? card read, card write ? Reader appears, reader disappeared ?
-    switch (nfcService$.description) {
-      case 'action':
-        console.log('INFO (comp): An action happened:', nfcService$.action);
-      break;
-
-      case 'init':
-        console.log('INFO (comp): Reader initialization done.', nfcService$.globalStatus.reader.name);
-      break;
-
-      case 'error':
-        console.log('INFO (comp): An error happened:', nfcService$.errorDesc);
-
-        // We've got a new action (even if it's an error we have a message to show)
-        // Let's reset the view in order to show the steps following the action to the user
-        this.resetViewObjects();
-
-        this.alerts.push({ type: 'danger', message: 'An error occurred: ' + nfcService$.errorDesc });
-        
-      break;
-    }
-
-    //@TODO: reinit the nfc reader (check if reader.name) when a successful action is done
-
-    /**
-     * It's a card read
+     * Subscribes
+     * We subscribe to all our observables here
      */
 
-    // We've found a card but didn't processed it yet
-    if (nfcService$.action.cardRead && !nfcService$.complete) {
+    // Reader - when we find a new reader
+    this.nfcS.onReader$.subscribe(reader => {
+      if (this.DEBUG) { console.info(`device attached`, reader.name ); }
+
+      // update view object
+      this.nfc.reader.name = reader.name;
+      this.nfc.reader.status = 'ON';
+
+    });
+
+    // Reader end - when we lose a reader
+    this.nfcS.onReaderEnd$.subscribe(readerEnd => {
+      if (this.DEBUG) { console.info(`device removed`); }
+
+      // We've lost the reader
+      this.nfc.reader.status = 'OFF';
+      this.nfc.reader.name = '';
+
+    });
+
+    // card - when we find a card
+    this.nfcS.onCard$.subscribe(async card => {
+      if (this.DEBUG) { console.info(`Found a card`, card ); }
+
+      // A card has just been swiped but not processed yet: show spinner
+      this.nfc.card.status = 'ON';
       this.loading = true;
-    }
 
-    // We processed the card read and need to update the layout
-    if (nfcService$.action.cardRead && nfcService$.complete) {
-      
-      // MESSAGE: A card has been found alert
-      this.alerts.push({ type: 'light', message: 'A card has been found ' + this.getCardInfo(nfcService$) });
-      
-      // SUCCESS: Card has been read and ndef message has been parsed successfully
-      if (nfcService$.success) {
-        this.alerts.push({ type: 'success', message: 'Read a card successfully'});
-        this.alerts.push({ type: 'light', message: 'Raw Data (DEBUG:) ' + JSON.stringify(nfcService$.readResult.ndefMessage)});
+    });
 
-        // ndef parser lib returns an array containing any records in the message
-        const cardMessageArray = nfcService$.readResult.ndefMessage // isArray true
+    // card.off - when we lose a card
+    this.nfcS.onCardOff$.subscribe(cardOff => {
+      if (this.DEBUG) { console.info(`The card has been removed`, cardOff ); }
 
-        // Our record should be the first: index 0
-        // We verify if our object contains all the properties we defined (in this.cardContent)
-        const resultAsJSONIsVerified = this.verifyObjectValidity(JSON.parse(cardMessageArray[0].content));
+        // A card has been removed
+        this.nfc.card.status = 'OFF';
 
-        // Our object is valid (contains our props: eg. pin, transportname, bank etc...), we can work with it.
-        if (resultAsJSONIsVerified.success) {
-          this.alerts.push({ type: 'success', message: 'Parsed card content successfully. See the result above.' });
+    });
 
-          // Fill the cardContent object, it will show the grid with these infos to the user
-          this.cardContent = JSON.parse(cardMessageArray[0].content);
+    // error - any error is thrown here, either reader or card
+    this.nfcS.onError$.subscribe(error => {
+      if (this.DEBUG) { console.error(`an error occurred`, { error }); }
+    });
 
-        // result does not contains our pre-defined properties
-        } else if (resultAsJSONIsVerified.error) {
-          this.alerts.push({ type: 'warning', message: 'The card contains readable information but not the one we expect. You can find the card parsing above anyway.' });              
-          this.cardMessageUnknowFormatArray = cardMessageArray;
-        }
 
-      }
+    // aCardHasBeenRead - when a card has been read and processed
+    this.nfcS.aCardHasBeenRead$.subscribe(data => {
+      console.log('A card has been read and processed', data)
 
-      // ERROR: Card ndef message could not be read or parse
-      if (nfcService$.error) {
-
-        // Default behavior for any error: Tell the user, show the raw data for debug
-        this.alerts.push({ type: 'warning', message: 'Something wrong happened while reading or parsing card (' + nfcService$.errorDesc + ')'});
-        this.alerts.push({ type: 'light', message: 'Raw Data (DEBUG:)' + JSON.stringify(nfcService$.readResult.utf8)}); // raw result for debug
-
-        // Parse error
-        if (nfcService$.errorDesc === 'Not a WELL_KNOWN text record') {
-
-          // // This error should trigger a view reset as it's only a parse error
-          // this.resetViewObjects();
-
-          this.alerts.push({ type: 'light', message: 'Trying to parse manually the card' });
-
-          // We try to parse a JSON object from the utf8 string by isolating what's between {*}
-          const resultFromJSONParseTry = this.tryRegExpJSONParsing(nfcService$.readResult.utf8);
-          if (resultFromJSONParseTry.success) {
-
-            // it's a success, we verify if our object contains all the properties we defined (in this.cardContent)
-            const resultAsJSONIsVerified = this.verifyObjectValidity(resultFromJSONParseTry.result);
-            // Our object is valid, we can work with it.
-            if (resultAsJSONIsVerified.success) {
-              this.alerts.push({ type: 'success', message: 'Parsed card content successfully. See the result above.' });
-
-              // Fill the cardContent object, it will show the grid with these infos to the user
-              this.cardContent = resultFromJSONParseTry.result;
-
-            // result is a valid JSON object, but does not contains our pre-defined properties
-            } else if (resultAsJSONIsVerified.error) {
-              console.log('ISVALIDJSON with UNKNOWNPROPS', resultFromJSONParseTry.result)
-              this.cardMessageUnknowFormatArray = resultFromJSONParseTry.result;
-            }
-            // parsing failed, tell the user the card is not readable as is
-          } else if (resultFromJSONParseTry.error) {
-            this.alerts.push({ type: 'danger', message: 'Unable to parse card content, please rewrite the card from scratch' });
-          }
-        }
-
-      }
-      // Job is done:
+      // A card has been processed: hide spinner
       this.loading = false;
-    } // cardRead
 
-    /**
-     * It's a card write
-     */
-    if (nfcService$.action.cardWrite  && nfcService$.complete) {
-      // SUCCESS
-      if (nfcService$.success) {
-        console.log(nfcService$.writeResult.valueWritten.pin)
-        let bank = nfcService$.writeResult.valueWritten.bankName;
-        let securityTransportCompany = nfcService$.writeResult.valueWritten.securityTransportCompany;
-        let appVersion = nfcService$.writeResult.valueWritten.appVersion;
-        let pin = nfcService$.writeResult.valueWritten.pin;
+      // update view object
 
-        this.alerts.push({ 
-          type: 'success', 
-          message: 'Wrote the card successfully (bank:' + bank + ' - transport company:' + securityTransportCompany + ' - appVersion:' + appVersion + ' - pin:' + pin + ')'});        
-      }
-      // ERROR
-      if (nfcService$.error) {
-        this.alerts.push({ type: 'danger', message: 'Something went wrong while writing card. Maybe the card was moved while writing or the card is locked or broken ?' });
-      }
-      // Job is done:
-      this.loading = false;
-      // console.log(nfcService$.writeResult)
-    }
+    });
 
+    // aCardHasBeenWritten - when a card has been written and processed
+    this.nfcS.aCardHasBeenWritten$.subscribe(data => {
+      console.log('A card has been written and processed', data)
+    });
 
-    // Something wrong happened
-    if (nfcService$.error) {
-      console.error('Global Error', nfcService$)
-      if (nfcService$.errorDesc !== 'Not a WELL_KNOWN text record') {
-        this.showToast('error', 'Error', nfcService$.errorType + ' - ' + nfcService$.errorDesc);
-      }
-      // this.nfc.error = null;
-      // this.nfcS.init();
-    }
-
-  }
-  
-  /**
-   * @method showToast
-   * @description show a toast on the top-right corner
-   *
-   * @private
-   * @param {string} type 'error, success, info, warning...'
-   * @param {string} title 'a title'
-   * @param {string} body 'body of the message to be shown'
-   * @memberof NfcComponent
-   */
-  private showToast(type: string, title: string, body: string) {
-    this.toasterConfig = this.toasterConfigService.getConfig();
-    const toast: Toast = this.toasterConfigService.getToast(title, body)
-    this.toasterService.popAsync(toast);
-  }
-
-  closeAlert(alert: IAlert) {
-    const index: number = this.alerts.indexOf(alert);
-    this.alerts.splice(index, 1);
   }
 
 
@@ -325,15 +203,22 @@ export class NfcComponent implements OnInit {
     const fakePin = (Math.floor(1000 + Math.random() * 9000)).toString();
     const valueToWrite = {
       // pin: this.cardContent.pin || this.cardContentModel.pin,
-      pin: fakePin,
+      // pin: fakePin,
+      // @TODO: request the pin through tcp server, it's async.
+      pin: setTimeout(() => {
+        return fakePin;
+      }, 1000),
       // securityTransportCompany: this.cardContent.securityTransportCompany || this.cardContentModel.securityTransportCompany,
       securityTransportCompany: this.selectedClient.name,
       bankName: this.cardContent.bankName || this.cardContentModel.bankName,
       // appVersion: this.cardContent.appVersion || this.cardContentModel.appVersion,
-      appVersion: '1.0.0',
+      appVersion: environment.version,
     }
     return valueToWrite;
   }
+
+
+
   modelChanged(ev) {
     // set the value to write using appriopriate getter
     this.nfcS.setValueToWrite(this.getValueToWrite());
@@ -347,7 +232,7 @@ export class NfcComponent implements OnInit {
     this.nfcS.setMode(this.readOrWriteMode);
   }
   writeCard() {
-    // reset the view at any switch read/write    
+    // reset the view at any switch read/write
     this.resetViewObjects();
 
     // switch mode to 'write'
@@ -358,60 +243,6 @@ export class NfcComponent implements OnInit {
     this.nfcS.setValueToWrite(this.getValueToWrite());
   }
 
-  /**
-   * @method tryRegExpJSONParsing
-   * @description @methodtryJSONParsing failed,
-   *      we try to regexp the string by searching what could be between braces {*}
-   *      if it succeed, we try to parse JSON
-   *
-   * @param {any} resultString
-   * @returns {object} '(result as json) + status'
-   * @memberof NfcComponent
-   */
-  tryRegExpJSONParsing(resultString) {
-    const bracesIsolatedStr = resultString.match(/{(.*?)\}/);
-
-    try {
-      const resultAsJson = JSON.parse(bracesIsolatedStr[0]);
-      return {
-        success: true,
-        error: false,
-        result: resultAsJson
-      }
-    } catch (e) {
-      return {
-        success: false,
-        error: true,
-        result: null
-      }
-    }
-  }
-
-  verifyObjectValidity(resultAsJson) {
-    // console.log(resultAsJson.content)
-    // let resultAsJson = JSON.parse(resultAsJson.content)
-    for (const property in this.cardContentModel) {
-
-      if (!resultAsJson.hasOwnProperty(property)) {
-        console.log('INFO comp): Did not found property: "' + property + '" in object:', resultAsJson);
-        // ERROR: missing property
-        return {
-          success: false,
-          error: true,
-          result: null
-        }
-      } else {
-        // SUCCESS: all properties are here
-        return {
-          success: true,
-          error: false,
-          result: resultAsJson
-        }
-      }
-
-    }
-
-  }
   /**
    * @method resetViewObject
    * @description resets the view (empty it) by settings object bound to view to default
@@ -426,15 +257,7 @@ export class NfcComponent implements OnInit {
     this.cardMessageUnknowFormatArray = [];
   }
 
-  getCardInfo(nfcService$) {
-    if (typeof nfcService$.cardUid !== 'undefined' && typeof nfcService$.cardType !== 'undefined') { 
-      return '(uid:' + nfcService$.cardUid + ' - type:' + nfcService$.cardType + ')';
-    } else {
-      return '';
-    }
-  }
 }
-
 
 export interface IAlert {
   type: string;

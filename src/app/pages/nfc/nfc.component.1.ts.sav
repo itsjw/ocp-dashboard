@@ -164,7 +164,7 @@ export class NfcComponentSAVE implements OnInit {
 
             // result does not contains our pre-defined properties
             } else if (resultAsJSONIsVerified.error) {
-              this.alerts.push({ type: 'warning', message: 'The card contains readable information but not the one we expect. You can find the card parsing below anyway.' });              
+              this.alerts.push({ type: 'warning', message: 'The card contains readable information but not the one we expect. You can find the card parsing below anyway.' });
               this.cardMessageUnknowFormatArray = cardMessageArray;
             }
 
