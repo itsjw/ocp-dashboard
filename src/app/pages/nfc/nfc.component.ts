@@ -49,8 +49,9 @@ export class NfcComponent implements AfterContentInit {
   selectedClient: { id: number; name: string; };
 
   readOrWriteMode = 'read'; // 'read' or 'write'
+  action: 'READ_CARD_MESSAGE';
 
-  DEBUG = true;
+  DEBUG = environment.debug;
   loading = false;
 
   @Input()
@@ -182,7 +183,7 @@ export class NfcComponent implements AfterContentInit {
       // update view object
 
     });
-
+    
     // aCardHasBeenWritten - when a card has been written and processed
     this.nfcS.aCardHasBeenWritten$.subscribe(data => {
       console.log('A card has been written and processed', data)
@@ -234,7 +235,7 @@ export class NfcComponent implements AfterContentInit {
   writeCard() {
     // reset the view at any switch read/write
     this.resetViewObjects();
-
+    
     // switch mode to 'write'
     this.readOrWriteMode = 'write';
     this.nfcS.setMode(this.readOrWriteMode);

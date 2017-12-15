@@ -1,3 +1,4 @@
+import { environment } from './../../../environments/index';
 import { Observable, ObservableInput } from 'rxjs/Observable';
 
 import * as Rx from 'rxjs';
@@ -12,7 +13,7 @@ import { EventEmitter } from 'events';
 import { Subject } from 'rxjs';
 
 @Injectable()
-export class NfcService implements OnInit {
+export class NfcService {
   valueToWrite: any;
   readOrWriteMode: any;
   reader: any;
@@ -22,7 +23,7 @@ export class NfcService implements OnInit {
   readerEvent: any;
 
   // component vars
-  DEBUG = true;
+  DEBUG = environment.debug;
   currentAction = 'READ_CARD_MESSAGE';
 
   nfcLib = new NFC();
@@ -112,12 +113,14 @@ export class NfcService implements OnInit {
 
   // card - when we find a card
   onCard = this.onCard$.subscribe(async card => {
-    if (this.DEBUG) { console.info(`Processing card (uid:`, card.uid + ')' ); }
+    if (this.DEBUG) { console.info(`(nfcS) - Processing card (uid:`, card.uid + ')' ); }
     const action = this.actionManager.onCard();
-    action.then(cardData => {
-      console.log('cardData', cardData)
-      // ADD PROCESS HERE ?
-      this.aCardHasBeenRead$.next(cardData)
+    action.then(rawData => {
+      console.log('(nfcS) -', this.currentAction, 'rawData', rawData);
+      const parsedData = this.NfcParser.parseNdef(rawData);
+      // console.log('(nfcS) -', this.currentAction, 'parsedData', parsedData);
+      
+      // this.aCardHasBeenRead$.next(parsedData);
     });
   });
 
@@ -135,7 +138,7 @@ export class NfcService implements OnInit {
     onCard: () => {
       switch (this.currentAction) {
         case 'READ_CARD_MESSAGE':
-          return this.readCard(4, 16);
+          return this.readCard(4, 250);
           // break;
         case 'READ_CARD_CONFIG':
           return this.readCard(4, 16);
@@ -148,7 +151,7 @@ export class NfcService implements OnInit {
   }
 
   constructor(public NfcParser: NfcParserService, public ndefFormater: NdefFormaterService) {
-    console.log('NfcService loaded');
+    console.log('(nfcS) - NfcService loaded');
   }
 
   /**
@@ -179,7 +182,7 @@ export class NfcService implements OnInit {
    */
   async writeCard(blockNumber, data, blockSize = 4) {
     const writeData = await this.reader.write(blockNumber, length); // await reader.write(4, data, 16); for Mifare Classic cards
-    if (this.DEBUG) { console.info(`data written`, { reader: this.reader.name, writeData }); }
+    if (this.DEBUG) { console.info(`(nfcS) - data written`, { reader: this.reader.name, writeData }); }
   }
 
   setMode(mode) {

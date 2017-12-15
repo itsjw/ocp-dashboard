@@ -1,3 +1,4 @@
+import { environment } from './../../../environments/index';
 import { NFC, TAG_ISO_14443_3, TAG_ISO_14443_4, KEY_TYPE_A, KEY_TYPE_B } from 'nfc-pcsc';
 
 import ndef from '@taptrack/ndef'; // ndef formater
@@ -9,7 +10,7 @@ import { Injectable } from '@angular/core';
 export class NfcParserService {
 
   parseNdef(data) {
-    const DEBUG = false;
+    const DEBUG = environment.debug;
 
     if (DEBUG) { console.log('Parsing data:', data) }
     const isLittleEndian = ((new Uint32Array((new Uint8Array([1, 2, 3, 4])).buffer))[0] === 0x04030201);
@@ -54,26 +55,27 @@ export class NfcParserService {
       // var b = new Buffer("03dbd101d75402656e7b2270696e223a22553246736447566b5831394275786b2f7354576d645846726643674e73666d784a4f7154766f4a7857346b4853372b706852537149656746622f2f7a586d52456a5a4c7361454b3252714970424d7969686c55754134385636465147764c7943507a39343862357a7633593d222c2273656375726974795472616e73706f7274436f6d70616e79223a224d617364726961222c2262616e6b4e616d65223a2254686520536175646920427269746973682042616e6b222c2261707056657273696f6e223a22312e302e30227dfe", "hex")
       // var b = new Buffer("030bd101075402656e61626364fe", "hex")
 
-      // var message = ndef.Message.fromBytes(b);
       const message = ndef.Message.fromBytes(data); // get message
-      const records = message.getRecords(); // get records
-      // const recordContent = ndef.Utils.resolveTextRecord(records[0]); // parse records pretending it's 'Well-Known Text' records
+      // const records = message.getRecords(); // get records
+      // // const recordContent = ndef.Utils.resolveTextRecord(records[0]); // parse records pretending it's 'Well-Known Text' records
 
-      const ndefMessage = [];
-      records.forEach(record => {
-        const recordContent = ndef.Utils.resolveTextRecord(record);
-        ndefMessage.push(recordContent)
-        if (DEBUG) { console.log('recordContent:', recordContent) }
-      });
+      // // console.log('mr', message, records);
+      
+      // const ndefMessage = [];
+      // records.forEach(record => {
+      //   const recordContent = ndef.Utils.resolveTextRecord(record);
+      //   ndefMessage.push(recordContent)
+      //   if (DEBUG) { console.log('recordContent:', recordContent) }
+      // });
 
-      const ndefParsedMessage = {
-        rawData : data,
-        ndefMessage: ndefMessage,
-        utf8: data.toString('utf8'),
-        hex: data.toString('hex')
-      }
+      // const ndefParsedMessage = {
+      //   rawData : data,
+      //   ndefMessage: ndefMessage,
+      //   utf8: data.toString('utf8'),
+      //   hex: data.toString('hex')
+      // }
 
-    return ndefParsedMessage;
+    // return ndefParsedMessage;
   }
 
 
