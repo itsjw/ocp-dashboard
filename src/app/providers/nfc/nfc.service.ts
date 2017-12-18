@@ -11,6 +11,7 @@ import { NfcParserService } from './nfcparser.service';
 import { NdefFormaterService } from './ndefformater.service'
 import { EventEmitter } from 'events';
 import { Subject } from 'rxjs';
+import ndefParser from 'ndef-parser';
 
 @Injectable()
 export class NfcService {
@@ -74,7 +75,7 @@ export class NfcService {
 
   aCardHasBeenRead$ = new Subject();
   aCardHasBeenWritten$ = new Subject();
-
+  aCardCouldntBeRead$ = new Subject();
 
   /**
    * Source Observable
@@ -114,13 +115,27 @@ export class NfcService {
   // card - when we find a card
   onCard = this.onCard$.subscribe(async card => {
     if (this.DEBUG) { console.info(`(nfcS) - Processing card (uid:`, card.uid + ')' ); }
-    const action = this.actionManager.onCard();
-    action.then(rawData => {
-      console.log('(nfcS) -', this.currentAction, 'rawData', rawData);
-      const parsedData = this.NfcParser.parseNdef(rawData);
-      // console.log('(nfcS) -', this.currentAction, 'parsedData', parsedData);
-      
-      // this.aCardHasBeenRead$.next(parsedData);
+
+    this.actionManager.onCard('READ_CARD_HEADER').then(rawHeader => {
+      console.log('(nfcS) -', 'rawHeader', rawHeader);
+
+      const headerValues = ndefParser.parseHeader(rawHeader);
+      console.log(headerValues);
+
+      if (headerValues.hasTagReadPermissions && headerValues.isTagFormatedAsNdef && headerValues.hasTagANdefMessage) {
+        this.actionManager.onCard('READ_CARD_MESSAGE', 4, headerValues.tagLengthToReadFromBlock4).then(ndefMessage => {
+          try {
+            const parsedNdef = ndefParser.parseNdef(ndefMessage);
+            // If sub-processing is need it lands here.
+            // eg. parsing something special we need in the records
+            this.aCardHasBeenRead$.next(parsedNdef);
+          } catch (e) {
+            this.aCardCouldntBeRead$.next(e);
+          }
+
+
+        });
+      }
     });
   });
 
@@ -135,13 +150,13 @@ export class NfcService {
    * @returns {function} according to the @param currentAction
    */
   actionManager = {
-    onCard: () => {
-      switch (this.currentAction) {
+    onCard: (action, blockStart?, length?) => {
+      switch (action) {
         case 'READ_CARD_MESSAGE':
-          return this.readCard(4, 250);
+          return this.readCard(4, length);
           // break;
-        case 'READ_CARD_CONFIG':
-          return this.readCard(4, 16);
+        case 'READ_CARD_HEADER':
+          return this.readCard(0, 20);
           // break;
 
         default:

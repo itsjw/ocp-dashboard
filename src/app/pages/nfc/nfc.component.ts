@@ -183,7 +183,18 @@ export class NfcComponent implements AfterContentInit {
       // update view object
 
     });
-    
+
+    // aCardCouldntBeRead - when a card read or process failed
+    this.nfcS.aCardCouldntBeRead$.subscribe(error => {
+      console.log('A card could not be read and processed', error)
+
+      // A card has been processed: hide spinner
+      this.loading = false;
+
+      // update view object
+
+    });
+
     // aCardHasBeenWritten - when a card has been written and processed
     this.nfcS.aCardHasBeenWritten$.subscribe(data => {
       console.log('A card has been written and processed', data)
@@ -235,7 +246,7 @@ export class NfcComponent implements AfterContentInit {
   writeCard() {
     // reset the view at any switch read/write
     this.resetViewObjects();
-    
+
     // switch mode to 'write'
     this.readOrWriteMode = 'write';
     this.nfcS.setMode(this.readOrWriteMode);

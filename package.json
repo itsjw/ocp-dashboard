@@ -69,6 +69,7 @@
     "font-awesome": "^4.7.0",
     "ionicons": "^2.0.1",
     "leaflet": "^1.2.0",
+    "ndef-parser": "^1.0.7",
     "nebular-icons": "^1.0.6",
     "nfc-pcsc": "^0.6.1",
     "ng2-ckeditor": "^1.1.9",
