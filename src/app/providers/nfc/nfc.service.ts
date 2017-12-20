@@ -120,21 +120,23 @@ export class NfcService {
       console.log('(nfcS) -', 'rawHeader', rawHeader);
 
       const headerValues = ndefParser.parseHeader(rawHeader);
-      console.log(headerValues);
+      console.log('headerValues', headerValues);
 
       if (headerValues.hasTagReadPermissions && headerValues.isTagFormatedAsNdef && headerValues.hasTagANdefMessage) {
         this.actionManager.onCard('READ_CARD_MESSAGE', 4, headerValues.tagLengthToReadFromBlock4).then(ndefMessage => {
           try {
             const parsedNdef = ndefParser.parseNdef(ndefMessage);
-            // If sub-processing is need it lands here.
+            // If sub-processing is needed it lands here.
             // eg. parsing something special we need in the records
             this.aCardHasBeenRead$.next(parsedNdef);
           } catch (e) {
             this.aCardCouldntBeRead$.next(e);
           }
-
-
         });
+      } else {
+        // Should not happen, ndef lib should throw an error before:
+        // eg. "A card could not be read and processed Byte array is too short to contain any kind of NDEF message"
+        this.aCardCouldntBeRead$.next('No ndef message found.');
       }
     });
   });

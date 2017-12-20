@@ -198,6 +198,7 @@ export class NfcComponent implements AfterContentInit {
     // aCardHasBeenWritten - when a card has been written and processed
     this.nfcS.aCardHasBeenWritten$.subscribe(data => {
       console.log('A card has been written and processed', data)
+      console.log(JSON.parse(data))
     });
 
   }
