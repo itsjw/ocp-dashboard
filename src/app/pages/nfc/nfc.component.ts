@@ -31,13 +31,13 @@ import { environment } from '../../../environments';
 })
 
 export class NfcComponent implements AfterContentInit {
+  cardContent: { pin: any; securityTransportCompany: string; bankName: any; appVersion: string; };
   cardContentModel = {
     pin: '',
     securityTransportCompany: '',
     bankName: '',
     appVersion: ''
   }
-  cardContent = this.cardContentModel;
   cardMessageUnknowFormatArray: any;
 
   toasterConfig: ToasterConfig;
@@ -91,6 +91,7 @@ export class NfcComponent implements AfterContentInit {
     public printer: PrinterService
   ) {
       console.log('NFC page loaded.');
+      this.cardContent = this.cardContentModel;
   }
 
   ngAfterContentInit () {
@@ -182,6 +183,7 @@ export class NfcComponent implements AfterContentInit {
       this.loading = false;
 
       // update view object
+      this.alerts.push({ type: 'success', message: 'Read a card successfully'});
 
     });
 
@@ -193,6 +195,7 @@ export class NfcComponent implements AfterContentInit {
       this.loading = false;
 
       // update view object
+      this.alerts.push({ type: 'danger', message: 'An error occurred while reading the card: \n' + error });
 
     });
 
@@ -213,25 +216,47 @@ export class NfcComponent implements AfterContentInit {
    * @memberof NfcComponent
    */
   getValueToWrite() {
-    // const valueToWrite = {pin: 'U2FsdGVkX19Buxk/sTWmdXFrfCgNsfmxJOqTvoJxW4kHS7+phRSqIegFb//zXmREjZLsaEK2RqIpBMyihlUuA48V6FQGvLyCPz948b5zv3Y=', securityTransportCompany: 'Masdria', bankName: 'The Saudi British Bank', appVersion: '1.0.0'};
-    const fakePin = (Math.floor(1000 + Math.random() * 9000)).toString();
-    const valueToWrite = {
-      // pin: this.cardContent.pin || this.cardContentModel.pin,
-      // pin: fakePin,
-      // @TODO: request the pin through tcp server, it's async.
-      pin: setTimeout(() => {
-        return fakePin;
-      }, 1000),
-      // securityTransportCompany: this.cardContent.securityTransportCompany || this.cardContentModel.securityTransportCompany,
-      securityTransportCompany: this.selectedClient.name,
-      bankName: this.cardContent.bankName || this.cardContentModel.bankName,
-      // appVersion: this.cardContent.appVersion || this.cardContentModel.appVersion,
-      appVersion: environment.version,
-    }
-    return valueToWrite;
+    this.loading = true;
+    // this.alerts.push({ type: 'info', message: 'Getting values to write on the card.'});
+
+    // // const valueToWrite = {pin: 'U2FsdGVkX19Buxk/sTWmdXFrfCgNsfmxJOqTvoJxW4kHS7+phRSqIegFb//zXmREjZLsaEK2RqIpBMyihlUuA48V6FQGvLyCPz948b5zv3Y=', securityTransportCompany: 'Masdria', bankName: 'The Saudi British Bank', appVersion: '1.0.0'};
+    // const fakePin = (Math.floor(1000 + Math.random() * 9000)).toString();
+    // console.log(fakePin)
+    // const valueToWrite = {
+    //   // pin: this.cardContent.pin || this.cardContentModel.pin,
+    //   // pin: fakePin,
+    //   // @TODO: request the pin through tcp server, it's async.
+    //   pin: setTimeout(() => {
+    //     return fakePin;
+    //   }, 1000),
+    //   // securityTransportCompany: this.cardContent.securityTransportCompany || this.cardContentModel.securityTransportCompany,
+    //   securityTransportCompany: this.selectedClient.name,
+    //   bankName: this.cardContent.bankName || this.cardContentModel.bankName,
+    //   // appVersion: this.cardContent.appVersion || this.cardContentModel.appVersion,
+    //   appVersion: environment.version,
+    // }
+    this.getPinCode().then(pinCode => {
+      console.log('p', pinCode)
+      this.cardContent.pin = pinCode;
+      this.cardContent.securityTransportCompany = this.selectedClient.name;
+      this.cardContent.bankName = this.cardContent.bankName;
+      this.cardContent.appVersion = environment.version
+
+      this.loading = false;
+
+    })
+
+    return this.cardContent;
   }
 
-
+  getPinCode() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const fakePin = (Math.floor(1000 + Math.random() * 9000)).toString();
+        resolve(fakePin);
+      }, 1000);
+    });
+  }
 
   modelChanged(ev) {
     // set the value to write using appriopriate getter
