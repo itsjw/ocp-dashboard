@@ -26,6 +26,7 @@ import { NdefFormaterService } from 'app/providers/nfc/ndefformater.service';
 import { NfcParserService } from 'app/providers/nfc/nfcparser.service';
 import { PrinterService } from './providers/printer.service';
 import { LoggingService } from './providers/logging.service';
+import { NfccardToolService } from 'app/providers/nfc/nfccard-tool.service';
 
 @NgModule({
   declarations: [
@@ -46,16 +47,17 @@ import { LoggingService } from './providers/logging.service';
     AppRoutingModule
   ],
   providers: [
-    ElectronService, 
-    { provide: APP_BASE_HREF, useValue: '/' }, 
-    NfcService, 
+    ElectronService,
+    { provide: APP_BASE_HREF, useValue: '/' },
+    NfcService,
     NfcParserService,
     NdefFormaterService,
-    PrinterService
+    PrinterService,
+    NfccardToolService
     // disable error handler for now
     // @TODO: to clean.
     // {
-    //   provide: ErrorHandler, 
+    //   provide: ErrorHandler,
     //   useClass: GlobalErrorHandler
     // },
     // LoggingService

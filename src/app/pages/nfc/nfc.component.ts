@@ -88,7 +88,8 @@ export class NfcComponent implements AfterContentInit {
     public nfcS: NfcService,
     private toasterService: ToasterService, public toasterConfigService: ToasterConfigService,
     public ngZone: NgZone, private ref: ChangeDetectorRef,
-    public printer: PrinterService) {
+    public printer: PrinterService
+  ) {
       console.log('NFC page loaded.');
   }
 

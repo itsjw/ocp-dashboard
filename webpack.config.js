@@ -283,7 +283,8 @@ module.exports = {
     "util": "require('util')",
     "zlib": "require('zlib')",
     "nfc-pcsc": "require('nfc-pcsc')",
-    "printer": "require('printer')"
+    "printer": "require('printer')",
+    "ndef-lib": "require('ndef-lib')"
   },
   "resolve": {
     "extensions": [

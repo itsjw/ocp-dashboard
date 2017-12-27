@@ -4721,6 +4721,12 @@ ncname@1.0.x:
   dependencies:
     xml-char-classes "^1.0.0"
 
+ndef-lib@0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/ndef-lib/-/ndef-lib-0.0.7.tgz#7ce782798718b5784c965aa7db79984427372263"
+  dependencies:
+    requirejs "^2.3.5"
+
 ndef-parser@^1.0.7:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/ndef-parser/-/ndef-parser-1.0.11.tgz#8dc95be4463b63444f7dbe2c7a8abe56c2feaf89"
@@ -4740,6 +4746,14 @@ nfc-pcsc@^0.6.1:
   resolved "https://registry.yarnpkg.com/nfc-pcsc/-/nfc-pcsc-0.6.1.tgz#a923e01c8699e1a89d8b19a58b90ee3688653af7"
   dependencies:
     "@pokusew/pcsclite" "^0.4.18"
+
+nfccard-tool@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/nfccard-tool/-/nfccard-tool-0.0.8.tgz#a3f25abfad640b65f59ba760f7ddde0fae801ce6"
+  dependencies:
+    "@taptrack/ndef" "^1.0.3"
+    ndef-lib "0.0.7"
+    nfc-pcsc "^0.6.1"
 
 ng2-ckeditor@^1.1.9:
   version "1.1.13"
@@ -6239,6 +6253,10 @@ require-from-string@^1.1.0:
 require-main-filename@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/require-main-filename/-/require-main-filename-1.0.1.tgz#97f717b69d48784f5f526a6c5aa8ffdda055a4d1"
+
+requirejs@^2.3.5:
+  version "2.3.5"
+  resolved "https://registry.yarnpkg.com/requirejs/-/requirejs-2.3.5.tgz#617b9acbbcb336540ef4914d790323a8d4b861b0"
 
 requires-port@1.0.x, requires-port@1.x.x, requires-port@~1.0.0:
   version "1.0.0"
