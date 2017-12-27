@@ -39,3 +39,15 @@ https://stackoverflow.com/questions/46224181/nested-observables-from-nested-http
 https://www.learnrxjs.io/operators/transformation/concatmap.html
 http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html#instance-method-switchMapTo
 https://medium.com/front-end-hacking/creating-an-observable-with-angular-part-ii-the-4-different-types-3d8fd2835850
+
+
+
+J:\__DevSSD__\ocp_dashboard_elec-ang\node_modules\rxjs\Observable.d.ts
+
+    subscribe(next?: (value: any) => void, error?: (error: any) => void, complete?: () => void): Subscription;
+    // subscribe(next?: (value: T) => void, error?: (error: any) => void, complete?: () => void): Subscription;
+
+
+J:\__DevSSD__\ocp_dashboard_elec-ang\node_modules\rxjs\observable\FromEventObservable.d.ts
+    static create<T>(target: any, eventName: string): Observable<T>;
+    // static create<T>(target: EventTargetLike, eventName: string): Observable<T>;
