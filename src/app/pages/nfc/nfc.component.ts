@@ -189,7 +189,7 @@ export class NfcComponent implements AfterContentInit {
 
       // Tell the user a card has been read
       this.toast.show('success', 'Success', 'A card has been read and processed');
-      
+
       // Verify if record 0 of the parsed NDEF message contains our props
       const recordAsJSON = this.isAValidCard(parsedMessage);
 

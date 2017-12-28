@@ -128,7 +128,7 @@ export class NfcService {
       case 'write':
         this.writeAction(this.NDEFMessageToWrite);
         break;
-    
+
       default:
         throw new Error('No mode set: Not sure if I\'m suppose to read or write here')
     }
@@ -164,7 +164,7 @@ export class NfcService {
   }
 
   readAction() {
-    
+
     // 1 -Read the header
     this.actionManager.onCard('READ_CARD_HEADER').then(rawCardHeader => {
       console.log('(nfcS) -', 'rawHeader', rawCardHeader);
@@ -200,9 +200,9 @@ export class NfcService {
     });
 
   }
-  
+
   writeAction(NDEFMessage) {
-    
+
     // 1 -Read the header
     this.actionManager.onCard('READ_CARD_HEADER').then(rawCardHeader => {
     console.log('(nfcS) -', 'rawHeader', rawCardHeader);
@@ -283,9 +283,11 @@ if (result) {
 
     // const writeData = await this.reader.write(blockNumber, a); // await reader.write(4, data, 16); for Mifare Classic cards
     // if (this.DEBUG) { console.log(`(nfcS) - data written`, { reader: this.reader.name, writeData }); }
-    const a = Buffer.from('03569101155402656e49276d20612074657874206d65737361676511011055046769746875622e636f6d2f736f6d71540f17616e64726f69642e636f6d3a706b6768747470733a2f2f6769746875622e636f6d2f736f6d71fe000000', 'hex')
-    
+    // const a = Buffer.from('03569101155402656e49276d20612074657874206d65737361676511011055046769746875622e636f6d2f736f6d71540f17616e64726f69642e636f6d3a706b6768747470733a2f2f6769746875622e636f6d2f736f6d71fe000000', 'hex')
+    const a = new Buffer(4)
     console.log(a)
+    console.log(Buffer.isBuffer(new Buffer(4)))
+
 
     // Write the buffer on the card starting at block 4
     const preparationWrite = await this.reader.write(4, a);
