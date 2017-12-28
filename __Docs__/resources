@@ -51,3 +51,7 @@ J:\__DevSSD__\ocp_dashboard_elec-ang\node_modules\rxjs\Observable.d.ts
 J:\__DevSSD__\ocp_dashboard_elec-ang\node_modules\rxjs\observable\FromEventObservable.d.ts
     static create<T>(target: any, eventName: string): Observable<T>;
     // static create<T>(target: EventTargetLike, eventName: string): Observable<T>;
+
+
+npm run rebuild:nfc
+npm start

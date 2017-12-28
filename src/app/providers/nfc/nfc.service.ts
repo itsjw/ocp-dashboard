@@ -13,12 +13,13 @@ import { EventEmitter } from 'events';
 import { Subject } from 'rxjs';
 import ndefParser from 'ndef-parser';
 import nfcCard from 'nfccard-tool';
+import { NgSwitchCase } from '@angular/common/src/directives/ng_switch';
 
 // import { nfcCardService } from 'app/providers/nfc/nfccard-tool.service';
 
 @Injectable()
 export class NfcService {
-  valueToWrite: any;
+  NDEFMessageToWrite: any;
   readOrWriteMode: any;
   reader: any;
   card: any;
@@ -117,8 +118,53 @@ export class NfcService {
 
   // card - when we find a card
   onCard = this.onCard$.subscribe(async card => {
-    if (this.DEBUG) { console.info(`(nfcS) - Processing card (uid:`, card.uid + ')' ); }
+    if (this.DEBUG) { console.log(`(nfcS) - Processing card (uid:`, card.uid + ')' ); }
 
+    console.log(this.readOrWriteMode)
+    switch (this.readOrWriteMode) {
+      case 'read':
+        this.readAction();
+        break;
+      case 'write':
+        this.writeAction(this.NDEFMessageToWrite);
+        break;
+    
+      default:
+        throw new Error('No mode set: Not sure if I\'m suppose to read or write here')
+    }
+
+  });
+
+
+  /**
+   * @namespace actionManager
+   * @description a dispatcher used to know what we are supposed to do when we find a card
+   *
+   * @method onCard
+   * @description What to do when we find a card ?
+   *    - Check what's the current action and return the approriate method
+   * @returns {function} according to the @param currentAction
+   */
+  actionManager = {
+    onCard: (action, blockStart?, length?, data?) => {
+      switch (action) {
+        case 'READ_CARD_MESSAGE':
+          return this.readCard(4, length);
+
+        case 'READ_CARD_HEADER':
+          return this.readCard(0, 20);
+
+        case 'WRITE_CARD_MESSAGE':
+          return this.writeCard(blockStart, data);
+
+        default:
+          break;
+      }
+    }
+  }
+
+  readAction() {
+    
     // 1 -Read the header
     this.actionManager.onCard('READ_CARD_HEADER').then(rawCardHeader => {
       console.log('(nfcS) -', 'rawHeader', rawCardHeader);
@@ -127,7 +173,7 @@ export class NfcService {
       console.log('(nfcS) - tag info:', tag);
 
       // There might be a NDEF message and we are able to read the tag
-      if(nfcCard.isFormatedAsNDEF() && nfcCard.hasReadPermissions() && nfcCard.hasNDEFMessage()) {
+      if (nfcCard.isFormatedAsNDEF() && nfcCard.hasReadPermissions() && nfcCard.hasNDEFMessage()) {
 
         const messageLength = nfcCard.getNDEFMessageLengthToRead();
 
@@ -151,58 +197,52 @@ export class NfcService {
         this.aCardCouldntBeRead$.next('No ndef message found.');
         console.log('Could not parse anything from this tag: \n The tag is either empty, locked, has a wrong NDEF format or is unreadable.')
       }
-
-
-
-      // const headerValues = ndefParser.parseHeader(rawHeader);
-      // console.log('headerValues', headerValues);
-
-      // if (headerValues.hasTagReadPermissions && headerValues.isTagFormatedAsNdef && headerValues.hasTagANdefMessage) {
-      //   this.actionManager.onCard('READ_CARD_MESSAGE', 4, headerValues.tagLengthToReadFromBlock4).then(ndefMessage => {
-      //     try {
-      //       const parsedNdef = ndefParser.parseNdef(ndefMessage);
-      //       // If sub-processing is needed it lands here.
-      //       // eg. parsing something special we need in the records
-      //       console.log('nfcCard', this.nfcCard)
-      //       this.aCardHasBeenRead$.next(parsedNdef);
-      //     } catch (e) {
-      //       this.aCardCouldntBeRead$.next(e);
-      //     }
-      //   });
-      // } else {
-      //   // Should not happen, ndef lib should throw an error before:
-      //   // eg. "A card could not be read and processed Byte array is too short to contain any kind of NDEF message"
-      //   this.aCardCouldntBeRead$.next('No ndef message found.');
-      // }
     });
-  });
 
-
-  /**
-   * @namespace actionManager
-   * @description a dispatcher used to know what we are supposed to do when we find a card
-   *
-   * @method onCard
-   * @description What to do when we find a card ?
-   *    - Check what's the current action and return the approriate method
-   * @returns {function} according to the @param currentAction
-   */
-  actionManager = {
-    onCard: (action, blockStart?, length?) => {
-      switch (action) {
-        case 'READ_CARD_MESSAGE':
-          return this.readCard(4, length);
-          // break;
-        case 'READ_CARD_HEADER':
-          return this.readCard(0, 20);
-          // break;
-
-        default:
-          break;
-      }
-    }
   }
+  
+  writeAction(NDEFMessage) {
+    
+    // 1 -Read the header
+    this.actionManager.onCard('READ_CARD_HEADER').then(rawCardHeader => {
+    console.log('(nfcS) -', 'rawHeader', rawCardHeader);
 
+    // instanciate the lib by parsing the header (allows us to use lazy methods hasWritePermissions & hasReadPermissions)
+    const tag = nfcCard.parseInfo(rawCardHeader);
+
+    // We can read and write data area
+    if (nfcCard.hasWritePermissions() && nfcCard.hasReadPermissions()) {
+
+      // Prepare the buffer to write on the card
+      const rawDataToWrite = nfcCard.prepareBytesToWrite(NDEFMessage);
+
+      // Read the ndef message (from block 4, and pass the appropriate length to read)
+      this.actionManager.onCard('WRITE_CARD_MESSAGE', 4, null, rawDataToWrite.preparedData).then(result => {
+
+// Success !
+if (result) {
+  console.log('Data have been written successfully.')
+}
+
+        // try {
+        //   // Parse the buffer as a NDEF raw message
+        //   const NDEFMessage = nfcCard.parseNDEF(NDEFRawMessage);
+
+        //   // Next the result to the component
+        //   this.aCardHasBeenRead$.next(NDEFMessage);
+        // } catch (e) {
+        //   // Next the Error to the component
+        //   this.aCardCouldntBeRead$.next(e);
+        // }
+
+      });
+
+    } else {
+      this.aCardCouldntBeRead$.next('No ndef message found.');
+      console.log('Could not parse anything from this tag: \n The tag is either empty, locked, has a wrong NDEF format or is unreadable.')
+    }
+  });
+  }
   constructor(
     public NfcParser: NfcParserService,
     public ndefFormater: NdefFormaterService,
@@ -223,7 +263,7 @@ export class NfcService {
    */
   async readCard(blockNumber, length, blockSize = 4, packetSize = 16) {
     // var data = await this.reader.read(blockNumber, length); // await reader.read(4, 16, 16); for Mifare Classic cards
-    // if (this.DEBUG) { console.info(`data read - (`, currentAction, ')', { reader: this.reader.name, data }); }
+    // if (this.DEBUG) { console.log(`data read - (`, currentAction, ')', { reader: this.reader.name, data }); }
     return await this.reader.read(blockNumber, length); // await reader.write(4, data, 16); for Mifare Classic cards
   }
 
@@ -234,20 +274,29 @@ export class NfcService {
    *
    * @param {any} blockNumber
    * @param {any} data
-   * @param {number} [blockSize=4]
+   * @param {number} [blockSize = 4]
    * @memberof NfcReaderService
    */
   async writeCard(blockNumber, data, blockSize = 4) {
-    const writeData = await this.reader.write(blockNumber, length); // await reader.write(4, data, 16); for Mifare Classic cards
-    if (this.DEBUG) { console.info(`(nfcS) - data written`, { reader: this.reader.name, writeData }); }
+    // // const a = Buffer.from('03569101155402656e49276d20612074657874206d65737361676511011055046769746875622e636f6d2f736f6d71540f17616e64726f69642e636f6d3a706b6768747470733a2f2f6769746875622e636f6d2f736f6d71fe000000', 'hex')
+    // const a = Buffer.from('0000', 'hex')
+
+    // const writeData = await this.reader.write(blockNumber, a); // await reader.write(4, data, 16); for Mifare Classic cards
+    // if (this.DEBUG) { console.log(`(nfcS) - data written`, { reader: this.reader.name, writeData }); }
+    const a = Buffer.from('03569101155402656e49276d20612074657874206d65737361676511011055046769746875622e636f6d2f736f6d71540f17616e64726f69642e636f6d3a706b6768747470733a2f2f6769746875622e636f6d2f736f6d71fe000000', 'hex')
+    
+    console.log(a)
+
+    // Write the buffer on the card starting at block 4
+    const preparationWrite = await this.reader.write(4, a);
   }
 
   setMode(mode) {
     this.readOrWriteMode = mode;
   }
 
-  setValueToWrite(value) {
-    this.valueToWrite = value;
+  setNDEFMessageToWrite(NDEFMessage) {
+    this.NDEFMessageToWrite = NDEFMessage;
   }
 }
 

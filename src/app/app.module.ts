@@ -1,3 +1,4 @@
+import { CryptoService } from './providers/crypto/crypto.service';
 
 import 'zone.js/dist/zone-mix';
 import 'reflect-metadata';
@@ -55,7 +56,8 @@ import { TcpClientService } from 'app/providers/tcp/tcp-client.service';
     NdefFormaterService,
     PrinterService,
     NfccardToolService,
-    TcpClientService
+    TcpClientService,
+    CryptoService
     // disable error handler for now
     // @TODO: to clean.
     // {

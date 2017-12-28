@@ -14,7 +14,6 @@
     <nb-card>
       <nb-card-header>
           <div class="row">
-
             <!-- Left: reader status -->
             <div class="col-4">
               <i class="fa fa-circle" aria-hidden="true"
@@ -82,16 +81,16 @@
             </div>
           </div>
 
-          <div class="col-4">
-            <div class="form-group" *ngIf="selectedClient && readOrWriteMode == 'write'">
+          <div class="col-4" *ngIf="readOrWriteMode == 'write'">
+            <div class="form-group">
               <label>Client: </label><br />
               <select [(ngModel)]="selectedClient" class="form-control" (ngModelChange)="modelChanged($event)">
                 <option *ngFor="let client of clients" [ngValue]="client">{{client.name}}</option>
               </select>
             </div>
           </div>
-          <div class="col-4">
-            <div class="form-group" *ngIf="cardContent.bankName && readOrWriteMode == 'write'">
+          <div class="col-4" *ngIf="readOrWriteMode == 'write'">
+            <div class="form-group">
               <label>Bank name: </label><br />
               <input type="text" class="form-control" [(ngModel)]="cardContent.bankName" name="bankName" (ngModelChange)="modelChanged($event)">
             </div>
@@ -99,10 +98,10 @@
 
         </div>
 
-        <div class="row">
+        <div class="row" *ngIf="readOrWriteMode == 'write'">
           <div class="col-4 offset-4">
             <form>
-              <div class="form-group" *ngIf="cardContent.pin && readOrWriteMode == 'write'">
+              <div class="form-group">
                 <label>Pin code: </label><br />
                 <input type="text" class="form-control" placeholder="No pin built yet." [(ngModel)]="cardContent.pin" name="pin" disabled>
               </div>
@@ -110,9 +109,9 @@
           </div>
           <div class="col-4">
             <form>
-              <div class="form-group" *ngIf="cardContent.appVersion && readOrWriteMode == 'write'">
-                <label>App versiona: </label><br />
-                <input type="text" class="form-control" [(ngModel)]="cardContent.appVersion" name="appVersion" disabled>
+              <div class="form-group">
+                <label>App version: </label><br />
+                <input type="text" class="form-control" placeholder="No version retrieved yet." [(ngModel)]="cardContent.appVersion" name="appVersion" disabled>
               </div>
             </form>
           </div>
@@ -121,8 +120,16 @@
       </nb-card-body>
     </nb-card>
 
+    
+<!-- Alerts messages -->
+<p *ngFor="let alert of alerts | reverseArr; let i = index" [@fadeIn]="''">
+  <!-- <ngb-alert [type]="alert.type" (close)="closeAlert(alert)" class="fade animate-show animate-hide">{{ alerts.length - i }} - {{ alert.message }}</ngb-alert> -->
+  <ngb-alert [type]="alert.type" (close)="closeAlert(alert)" class="fade animate-show animate-hide">{{ alert.message }}</ngb-alert>
+</p>
+
+
 <!-- Standard record -->
-<table class="table" *ngIf="cardContent.pin && cardContent.securityTransportCompany && cardContent.bankName && cardContent.appVersion">
+<table class="table" *ngIf="cardContent.pin && cardContent.securityTransportCompany && cardContent.bankName && cardContent.appVersion && readOrWriteMode === 'read'">
   <thead>
     <tr>
       <th>Card Uid</th>
@@ -149,27 +156,21 @@
     <thead>
       <tr>
         <!-- <th *ngFor="key of cardRecordUnknowFormat | getKeys">{{entry.key}}</th> -->
-        <th class="span4"></th>
         <th class="span2">Language</th>
-        <th class="span2">Content</th>
-        <th class="span4"></th>
+        <th class="span4">Content</th>
+        <th class="span2">Record type</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td class="span4"></td>
         <td scope="row" class="span2">{{ cardRecordUnknowFormat.language }}</td>
-        <td class="span2">{{ cardRecordUnknowFormat.content }}</td>
-        <td class="span4"></td>
+        <td class="span4">{{ cardRecordUnknowFormat.content || cardRecordUnknowFormat.text || cardRecordUnknowFormat.uri || cardRecordUnknowFormat.aar }}</td>
+        <td class="span2">{{ cardRecordUnknowFormat.type }}</td>
       </tr>
     </tbody>
   </table>
 </div>
 
-<!-- Alerts messages -->
-<p *ngFor="let alert of alerts | reverseArr; let i = index" [@fadeIn]="''">
-  <ngb-alert [type]="alert.type" (close)="closeAlert(alert)" class="fade animate-show animate-hide">{{ alerts.length - i }} - {{ alert.message }}</ngb-alert>
-</p>
 
 
 
