@@ -32,8 +32,7 @@ import { TcpClientService } from 'app/providers/tcp/tcp-client.service';
 })
 
 export class NfcComponent implements AfterContentInit {
-  cardContentToWrite: { pin: any; securityTransportCompany: string; bankName: any; appVersion: string; };
-  cardContentRead: { pin: any; securityTransportCompany: string; bankName: any; appVersion: string; };
+  cardContent: { pin: any; securityTransportCompany: string; bankName: any; appVersion: string; };
   cardContentModel = {
     pin: '',
     securityTransportCompany: '',
@@ -47,7 +46,7 @@ export class NfcComponent implements AfterContentInit {
   nfcStatusisLoading: boolean;
   writtenCardsCount: number;
 
-  clients: any[];
+  clients: any;
   selectedClient: { id: number; name: string; };
 
   readOrWriteMode = 'read'; // 'read' or 'write'
@@ -110,17 +109,12 @@ export class NfcComponent implements AfterContentInit {
      * 0- Get client list
      * 1- Init NFC, check status
      */
-    // @TODO: tcp request here
-    setTimeout(() => {
-      this.clients = [
-        {id: 1, name: 'Masdria'},
-        {id: 2, name: 'Loomis'},
-        {id: 3, name: 'c'},
-        {id: 4, name: 'd'},
-        {id: 5, name: 'e'}
-      ];
-      this.selectedClient =  this.clients[0];
-    }, 1000);
+    this.tcp.getClientList().then(clients => {
+      console.log(clients);
+      this.clients = clients;
+      this.selectedClient =  clients[0]
+    })
+
 
     this.writtenCardsCount = 0;
     this.nfcStatusisLoading =  true;
@@ -221,9 +215,9 @@ export class NfcComponent implements AfterContentInit {
   getValueToWrite() {
 
     // A pin code has already been generated, update only other fields
-    if (this.cardContentToWrite.pin) {
-      this.cardContentToWrite.securityTransportCompany = this.selectedClient.name;
-      this.cardContentToWrite.bankName = this.cardContentToWrite.bankName;
+    if (this.cardContent.pin) {
+      this.cardContent.securityTransportCompany = this.selectedClient.name;
+      this.cardContent.bankName = this.cardContent.bankName;
       return;
     }
 
@@ -231,10 +225,10 @@ export class NfcComponent implements AfterContentInit {
 
     this.tcp.getPinCode().then(pinCode => {
       console.log('p', pinCode)
-      this.cardContentToWrite.pin = pinCode;
-      this.cardContentToWrite.securityTransportCompany = this.selectedClient.name;
-      this.cardContentToWrite.bankName = this.cardContentToWrite.bankName;
-      this.cardContentToWrite.appVersion = environment.version
+      this.cardContent.pin = pinCode;
+      this.cardContent.securityTransportCompany = this.selectedClient.name;
+      this.cardContent.bankName = this.cardContent.bankName;
+      this.cardContent.appVersion = environment.version
 
       this.isLoading = false;
 
@@ -245,7 +239,7 @@ export class NfcComponent implements AfterContentInit {
       console.log('errrrrr', error)
     })
 
-    return this.cardContentToWrite;
+    return this.cardContent;
   }
 
 
@@ -279,15 +273,14 @@ export class NfcComponent implements AfterContentInit {
    * @method resetViewObject
    * @description resets the view (empty it) by settings object bound to view to default
    *      - message array
-   *      - cardContentToWrite object
-   *      - cardContentRead object
+   *      - cardContent object
    *
    * @memberof NfcComponent
    */
   resetViewObjects() {
     this.alerts = [];
-    this.cardContentToWrite = this.cardContentModel;
-    this.cardContentRead = this.cardContentModel;
+    this.cardContent = this.cardContentModel;
+    this.cardContent = this.cardContentModel;
     this.cardMessageUnknowFormatArray = [];
   }
   // /**

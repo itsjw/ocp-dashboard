@@ -83,7 +83,7 @@
           </div>
 
           <div class="col-4">
-            <div class="form-group">
+            <div class="form-group" *ngIf="selectedClient && readOrWriteMode == 'write'">
               <label>Client: </label><br />
               <select [(ngModel)]="selectedClient" class="form-control" (ngModelChange)="modelChanged($event)">
                 <option *ngFor="let client of clients" [ngValue]="client">{{client.name}}</option>
@@ -91,7 +91,7 @@
             </div>
           </div>
           <div class="col-4">
-            <div class="form-group" *ngIf="cardContent.bankName || readOrWriteMode == 'write'">
+            <div class="form-group" *ngIf="cardContent.bankName && readOrWriteMode == 'write'">
               <label>Bank name: </label><br />
               <input type="text" class="form-control" [(ngModel)]="cardContent.bankName" name="bankName" (ngModelChange)="modelChanged($event)">
             </div>
@@ -102,7 +102,7 @@
         <div class="row">
           <div class="col-4 offset-4">
             <form>
-              <div class="form-group" *ngIf="cardContent.pin || readOrWriteMode == 'write'">
+              <div class="form-group" *ngIf="cardContent.pin && readOrWriteMode == 'write'">
                 <label>Pin code: </label><br />
                 <input type="text" class="form-control" placeholder="No pin built yet." [(ngModel)]="cardContent.pin" name="pin" disabled>
               </div>
@@ -110,8 +110,8 @@
           </div>
           <div class="col-4">
             <form>
-              <div class="form-group" *ngIf="cardContent.appVersion || readOrWriteMode == 'write'">
-                <label>App version: </label><br />
+              <div class="form-group" *ngIf="cardContent.appVersion && readOrWriteMode == 'write'">
+                <label>App versiona: </label><br />
                 <input type="text" class="form-control" [(ngModel)]="cardContent.appVersion" name="appVersion" disabled>
               </div>
             </form>
