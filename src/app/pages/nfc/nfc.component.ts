@@ -96,7 +96,9 @@ export class NfcComponent implements AfterContentInit {
       console.log('NFC page loaded.');
       this.nfcS.setMode(this.readOrWriteMode);
       this.cardContent = Object.assign({}, this.cardContentModel);
-      console.log('aaaaaa', Buffer.from(Buffer.from('7468697320697320612074c3a97374', 'hex')).buffer)
+      console.log('aaaaaa', Buffer.from('1234', 'hex'))
+      console.log('aaaaaa', Buffer.from([0xFE]))
+      console.log('aaaaaa', new Buffer(Buffer.from('1234', 'hex')))
   }
 
   ngAfterContentInit () {
