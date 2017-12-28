@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
-import { ToasterConfig, BodyOutputType } from 'angular2-toaster';
+import { ToasterConfig, ToasterService, BodyOutputType, Toast } from 'angular2-toaster';
 
 @Injectable()
 export class ToasterConfigService {
+  toasterConfig: ToasterConfig;
   position = 'toast-top-right';
   animationType = 'fade';
-  timeout = 5000;
+  timeout = 7000;
   toastsLimit = 5;
   type = 'default';
 
-  constructor() {
+  constructor(public toasterService: ToasterService) {
   }
 
   getConfig() {
@@ -25,7 +26,7 @@ export class ToasterConfigService {
   }
 
  getToast(title, body) {
-  return {  
+  return {
     type: this.type,
     title: title,
     body: body,
@@ -34,5 +35,21 @@ export class ToasterConfigService {
     bodyOutputType: BodyOutputType.TrustedHtml
   }
  }
+
+  /**
+   * @method show
+   * @description show a toast on the top-right corner
+   *
+   * @private
+   * @param {string} type 'error, success, info, warning...'
+   * @param {string} title 'a title'
+   * @param {string} body 'body of the message to be shown'
+   * @memberof NfcComponent
+   */
+  show(type: string, title: string, body: string) {
+    this.toasterConfig = this.getConfig();
+    const toast: Toast = this.getToast(title, body)
+    this.toasterService.popAsync(toast);
+  }
 
 }

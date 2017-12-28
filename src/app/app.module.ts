@@ -27,6 +27,7 @@ import { NfcParserService } from 'app/providers/nfc/nfcparser.service';
 import { PrinterService } from './providers/printer.service';
 import { LoggingService } from './providers/logging.service';
 import { NfccardToolService } from 'app/providers/nfc/nfccard-tool.service';
+import { TcpClientService } from 'app/providers/tcp/tcp-client.service';
 
 @NgModule({
   declarations: [
@@ -53,7 +54,8 @@ import { NfccardToolService } from 'app/providers/nfc/nfccard-tool.service';
     NfcParserService,
     NdefFormaterService,
     PrinterService,
-    NfccardToolService
+    NfccardToolService,
+    TcpClientService
     // disable error handler for now
     // @TODO: to clean.
     // {

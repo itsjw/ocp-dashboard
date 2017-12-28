@@ -11,6 +11,7 @@ import 'style-loader!angular2-toaster/toaster.css';
 import { trigger, state, style, transition, animate, keyframes } from '@angular/animations';
 
 import { environment } from '../../../environments';
+import { TcpClientService } from 'app/providers/tcp/tcp-client.service';
 
 @Component({
   selector: 'ngx-nfc',
@@ -31,7 +32,8 @@ import { environment } from '../../../environments';
 })
 
 export class NfcComponent implements AfterContentInit {
-  cardContent: { pin: any; securityTransportCompany: string; bankName: any; appVersion: string; };
+  cardContentToWrite: { pin: any; securityTransportCompany: string; bankName: any; appVersion: string; };
+  cardContentRead: { pin: any; securityTransportCompany: string; bankName: any; appVersion: string; };
   cardContentModel = {
     pin: '',
     securityTransportCompany: '',
@@ -42,7 +44,7 @@ export class NfcComponent implements AfterContentInit {
 
   toasterConfig: ToasterConfig;
   currentAction: string;
-  nfcStatusLoading: boolean;
+  nfcStatusisLoading: boolean;
   writtenCardsCount: number;
 
   clients: any[];
@@ -52,7 +54,7 @@ export class NfcComponent implements AfterContentInit {
   action: 'READ_CARD_MESSAGE';
 
   DEBUG = environment.debug;
-  loading = false;
+  isLoading = false;
 
   @Input()
   public alerts: Array<IAlert> = [];
@@ -60,7 +62,7 @@ export class NfcComponent implements AfterContentInit {
   nfc = {
     reader: {
       name: null,
-      status: 'LOADING', // ON, OFF, ERROR, LOADING - default as 'LOADING'
+      status: 'isLoading', // ON, OFF, ERROR, isLoading - default as 'isLoading'
       // object: null // useless - map & pass only what we need ?
     },
     card: {
@@ -86,9 +88,10 @@ export class NfcComponent implements AfterContentInit {
 
   constructor(
     public nfcS: NfcService,
-    private toasterService: ToasterService, public toasterConfigService: ToasterConfigService,
+    public toast: ToasterConfigService,
     public ngZone: NgZone, private ref: ChangeDetectorRef,
-    public printer: PrinterService
+    public printer: PrinterService,
+    public tcp: TcpClientService
   ) {
       console.log('NFC page loaded.');
       this.cardContent = this.cardContentModel;
@@ -120,7 +123,7 @@ export class NfcComponent implements AfterContentInit {
     }, 1000);
 
     this.writtenCardsCount = 0;
-    this.nfcStatusLoading =  true;
+    this.nfcStatusisLoading =  true;
 
 
     this.currentAction = '-';
@@ -156,7 +159,7 @@ export class NfcComponent implements AfterContentInit {
 
       // A card has just been swiped but not processed yet: show spinner
       this.nfc.card.status = 'ON';
-      this.loading = true;
+      this.isLoading = true;
 
     });
 
@@ -180,11 +183,11 @@ export class NfcComponent implements AfterContentInit {
       console.log('A card has been read and processed', data)
 
       // A card has been processed: hide spinner
-      this.loading = false;
+      this.isLoading = false;
 
       // update view object
-      this.alerts.push({ type: 'success', message: 'Read a card successfully'});
-
+      // this.alerts.push({ type: 'success', message: 'Read a card successfully'});
+      this.toast.show('success', 'Read a card successfully', 'A card has been read and processed');
     });
 
     // aCardCouldntBeRead - when a card read or process failed
@@ -192,7 +195,7 @@ export class NfcComponent implements AfterContentInit {
       console.log('A card could not be read and processed', error)
 
       // A card has been processed: hide spinner
-      this.loading = false;
+      this.isLoading = false;
 
       // update view object
       this.alerts.push({ type: 'danger', message: 'An error occurred while reading the card: \n' + error });
@@ -216,49 +219,39 @@ export class NfcComponent implements AfterContentInit {
    * @memberof NfcComponent
    */
   getValueToWrite() {
-    this.loading = true;
-    // this.alerts.push({ type: 'info', message: 'Getting values to write on the card.'});
 
-    // // const valueToWrite = {pin: 'U2FsdGVkX19Buxk/sTWmdXFrfCgNsfmxJOqTvoJxW4kHS7+phRSqIegFb//zXmREjZLsaEK2RqIpBMyihlUuA48V6FQGvLyCPz948b5zv3Y=', securityTransportCompany: 'Masdria', bankName: 'The Saudi British Bank', appVersion: '1.0.0'};
-    // const fakePin = (Math.floor(1000 + Math.random() * 9000)).toString();
-    // console.log(fakePin)
-    // const valueToWrite = {
-    //   // pin: this.cardContent.pin || this.cardContentModel.pin,
-    //   // pin: fakePin,
-    //   // @TODO: request the pin through tcp server, it's async.
-    //   pin: setTimeout(() => {
-    //     return fakePin;
-    //   }, 1000),
-    //   // securityTransportCompany: this.cardContent.securityTransportCompany || this.cardContentModel.securityTransportCompany,
-    //   securityTransportCompany: this.selectedClient.name,
-    //   bankName: this.cardContent.bankName || this.cardContentModel.bankName,
-    //   // appVersion: this.cardContent.appVersion || this.cardContentModel.appVersion,
-    //   appVersion: environment.version,
-    // }
-    this.getPinCode().then(pinCode => {
+    // A pin code has already been generated, update only other fields
+    if (this.cardContentToWrite.pin) {
+      this.cardContentToWrite.securityTransportCompany = this.selectedClient.name;
+      this.cardContentToWrite.bankName = this.cardContentToWrite.bankName;
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.tcp.getPinCode().then(pinCode => {
       console.log('p', pinCode)
-      this.cardContent.pin = pinCode;
-      this.cardContent.securityTransportCompany = this.selectedClient.name;
-      this.cardContent.bankName = this.cardContent.bankName;
-      this.cardContent.appVersion = environment.version
+      this.cardContentToWrite.pin = pinCode;
+      this.cardContentToWrite.securityTransportCompany = this.selectedClient.name;
+      this.cardContentToWrite.bankName = this.cardContentToWrite.bankName;
+      this.cardContentToWrite.appVersion = environment.version
 
-      this.loading = false;
+      this.isLoading = false;
 
+    }).catch(error => {
+      this.isLoading = false;
+      this.toast.show('error', 'An error occured', 'Something went wrong while trying to get the pin code through the TCP server.');
+
+      console.log('errrrrr', error)
     })
 
-    return this.cardContent;
+    return this.cardContentToWrite;
   }
 
-  getPinCode() {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const fakePin = (Math.floor(1000 + Math.random() * 9000)).toString();
-        resolve(fakePin);
-      }, 1000);
-    });
-  }
+
 
   modelChanged(ev) {
+    console.log(ev)
     // set the value to write using appriopriate getter
     this.nfcS.setValueToWrite(this.getValueToWrite());
   }
@@ -286,16 +279,32 @@ export class NfcComponent implements AfterContentInit {
    * @method resetViewObject
    * @description resets the view (empty it) by settings object bound to view to default
    *      - message array
-   *      - cardContent object
+   *      - cardContentToWrite object
+   *      - cardContentRead object
    *
    * @memberof NfcComponent
    */
   resetViewObjects() {
     this.alerts = [];
-    this.cardContent = this.cardContentModel;
+    this.cardContentToWrite = this.cardContentModel;
+    this.cardContentRead = this.cardContentModel;
     this.cardMessageUnknowFormatArray = [];
   }
-
+  // /**
+  //  * @method showToast
+  //  * @description show a toast on the top-right corner
+  //  *
+  //  * @private
+  //  * @param {string} type 'error, success, info, warning...'
+  //  * @param {string} title 'a title'
+  //  * @param {string} body 'body of the message to be shown'
+  //  * @memberof NfcComponent
+  //  */
+  // private showToast(type: string, title: string, body: string) {
+  //   this.toasterConfig = this.toasterConfigService.getConfig();
+  //   const toast: Toast = this.toasterConfigService.getToast(title, body)
+  //   this.toasterService.popAsync(toast);
+  // }
 }
 
 export interface IAlert {
