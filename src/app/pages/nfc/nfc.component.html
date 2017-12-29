@@ -19,7 +19,7 @@
               <i class="fa fa-circle" aria-hidden="true"
                   [ngClass]="{
                     'orange': nfc?.reader?.status == 'ERROR',
-                    'red': nfc?.reader?.status == 'OFF' || nfc?.reader?.status == 'LOADING',
+                    'red': nfc?.reader?.status == 'OFF' || nfc?.reader?.status == 'isLoading',
                     'green': nfc?.reader?.status === 'ON'
                   }"
               ></i>
@@ -29,7 +29,7 @@
                 <small *ngIf="nfc?.reader?.name">({{ nfc.reader.name }})</small>
               </span>
 
-              <span *ngIf="nfc?.reader?.status == 'OFF' || nfc?.reader?.status == 'LOADING'">
+              <span *ngIf="nfc?.reader?.status == 'OFF' || nfc?.reader?.status == 'isLoading'">
                 <small> Waiting for a <strong>NFC reader</strong>... </small> <i class="fa fa-circle-o-notch fa-spin fa-fw" style="padding-left: 8px;"></i>
               </span>
             </div>

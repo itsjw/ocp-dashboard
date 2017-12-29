@@ -1,3 +1,4 @@
+import { TcpresponseParserService } from './providers/tcp/tcpresponse-parser.service';
 import { CryptoService } from './providers/crypto/crypto.service';
 
 import 'zone.js/dist/zone-mix';
@@ -57,7 +58,8 @@ import { TcpClientService } from 'app/providers/tcp/tcp-client.service';
     PrinterService,
     NfccardToolService,
     TcpClientService,
-    CryptoService
+    CryptoService,
+    TcpresponseParserService
     // disable error handler for now
     // @TODO: to clean.
     // {

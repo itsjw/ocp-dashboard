@@ -6,12 +6,12 @@ export class CryptoService {
   MasdriaDemoKey: string;
 
   constructor() {
-    console.log('CryptoJS')
-    console.log(CryptoJS)
     this.MasdriaDemoKey = '6QauYkMSy0Jjk1Pmhhw2pJV7fZ9xqqEO'; // demo key (sent to masdria)
   }
 
-
+  /**
+   * Use: this.cryptoS.decrypt('DecodeMe', 'MasdriaDemoKey');
+   */
   encrypt(stringToEncrypt, secretKeyName) {
     const encryptedString = CryptoJS.AES.encrypt(stringToEncrypt, this[secretKeyName]).toString();
     return encryptedString; // (cyphered)
