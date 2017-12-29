@@ -13,6 +13,7 @@ import { trigger, state, style, transition, animate, keyframes } from '@angular/
 import { environment } from '../../../environments';
 import { TcpClientService } from 'app/providers/tcp/tcp-client.service';
 import { concat } from 'rxjs/operator/concat';
+import { Buffer } from 'buffer';
 
 @Component({
   selector: 'ngx-nfc',

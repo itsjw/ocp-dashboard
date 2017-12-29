@@ -24,6 +24,7 @@
     "start:web": "webpack-dev-server --content-base . --port 4200 --inline",
     "build:electron:mainOLD": "tsc main.ts --outDir dist && copyfiles package.json dist && cd dist && npm install --prod && cd ..",
     "build:electron:main": "tsc main.ts --outDir dist && copyfiles package.json dist && cd dist && npm install --target=1.7.8 --arch=x64 --target_arch=x64 --disturl=https://atom.io/download/electron --runtime=electron --build-from-source=true --prod && cd ..",
+    "fix:nfc": "dist/node_modules/.bin/electron-rebuild",
     "rebuild:nfc": "rm -rf dist && tsc main.ts --outDir dist && copyfiles package.json dist && cd dist && npm install --target=1.7.8 --arch=x64 --target_arch=x64 --disturl=https://atom.io/download/electron --runtime=electron --build-from-source=true --prod && cd ..",
     "buildmain": "tsc main.ts --outDir dist && copyfiles package.json dist && cd dist && npm install --target=1.7.5 --arch=x64 --target_arch=x64 --disturl=https://atom.io/download/electron --runtime=electron --build-from-source=true --prod && cd ..",
     "build": "webpack --display-error-details && npm run build:electron:main",
