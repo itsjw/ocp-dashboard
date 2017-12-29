@@ -262,7 +262,7 @@ module.exports = {
   "externals": {
     "electron": "require('electron')",
     // "buffer": "require('Buffer')",
-    "Buffer": "require('buffer')",
+    "buffer": "require('buffer')",
     "child_process": "require('child_process')",
     "crypto": "require('crypto')",
     "events": "require('events')",

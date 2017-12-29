@@ -15,6 +15,8 @@ import ndefParser from 'ndef-parser';
 import nfcCard from 'nfccard-tool';
 import { NgSwitchCase } from '@angular/common/src/directives/ng_switch';
 
+import { Buffer } from 'buffer';
+
 // import { nfcCardService } from 'app/providers/nfc/nfccard-tool.service';
 
 @Injectable()
