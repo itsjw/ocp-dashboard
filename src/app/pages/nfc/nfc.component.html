@@ -30,21 +30,22 @@
               </span>
 
               <span *ngIf="nfc?.reader?.status == 'OFF' || nfc?.reader?.status == 'isLoading'">
-                <small> Waiting for a <strong>NFC reader</strong>... </small> <i class="fa fa-circle-o-notch fa-spin fa-fw" style="padding-left: 8px;"></i>
+                <small> Waiting for a <strong>NFC reader</strong>... </small>
+                <span style="padding-left: 8px;"><i class="fa fa-circle-o-notch fa-spin fa-fw"></i></span>
               </span>
             </div>
 
             <!-- Middle: Action: -->
             <div class="col-4">
-              <small>
-                  <span *ngIf="nfc?.action?.type == 'CARD_READ'">Reading a card...</span>
-                  <span *ngIf="nfc?.action?.type == 'CARD_WRITE'">Writing a card...</span>
-                  <!-- <span *ngIf="nfc?.action?.init">Initializing reader...</span> -->
-              </small>
+              <i class="fa fa-circle red" aria-hidden="true" *ngIf="nfc?.TCPServer?.status == 'OFF'"></i>
+              <span *ngIf="nfc?.TCPServer?.status == 'OFF'">
+                OCP Server
+              </span>
+
             </div>
 
             <!-- Right: card written || card uid/type -->
-            <div class="col-4" *ngIf="readOrWriteMode=='write'">
+            <div class="col-4" *ngIf="readOrWriteMode=='write' && nfc?.reader?.status == 'ON'">
               Cards written:
               <small>{{ writtenCardsCount }}</small>
             </div>
@@ -84,7 +85,7 @@
           <div class="col-4" *ngIf="readOrWriteMode == 'write'">
             <div class="form-group">
               <label>Client: </label><br />
-              <select [(ngModel)]="selectedClient" class="form-control" (ngModelChange)="modelChanged($event)">
+              <select [(ngModel)]="selectedClient" class="form-control" (ngModelChange)="onUserInput($event)">
                 <option *ngFor="let client of clients" [ngValue]="client">{{client.name}}</option>
               </select>
             </div>
@@ -92,7 +93,7 @@
           <div class="col-4" *ngIf="readOrWriteMode == 'write'">
             <div class="form-group">
               <label>Bank name: </label><br />
-              <input type="text" class="form-control" [(ngModel)]="cardContent.bankName" name="bankName" (ngModelChange)="modelChanged($event)">
+              <input type="text" class="form-control" [(ngModel)]="cardContent.bankName" name="bankName" (ngModelChange)="onUserInput($event)">
             </div>
           </div>
 
@@ -120,7 +121,7 @@
       </nb-card-body>
     </nb-card>
 
-    
+
 <!-- Alerts messages -->
 <p *ngFor="let alert of alerts | reverseArr; let i = index" [@fadeIn]="''">
   <!-- <ngb-alert [type]="alert.type" (close)="closeAlert(alert)" class="fade animate-show animate-hide">{{ alerts.length - i }} - {{ alert.message }}</ngb-alert> -->

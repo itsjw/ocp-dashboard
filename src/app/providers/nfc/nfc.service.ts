@@ -8,7 +8,6 @@ import { Injectable } from '@angular/core';
 import { NFC } from 'nfc-pcsc';
 import { OnInit } from '@angular/core';
 import { NfcParserService } from './nfcparser.service';
-import { NdefFormaterService } from './ndefformater.service'
 import { EventEmitter } from 'events';
 import { Subject } from 'rxjs';
 import ndefParser from 'ndef-parser';
@@ -83,7 +82,7 @@ export class NfcService {
   aCardHasBeenWritten$ = new Subject();
   aCardCouldNotBeWritten$ = new Subject();
   globalError$ = new Subject();
-  
+
   /**
    * Source Observable
    * 'reader' event is our source
@@ -94,7 +93,9 @@ export class NfcService {
    *        reader.on('card', async card => {
    *          ...reader.write(blockNumber, length)...
    */
-  onReader$ = Rx.Observable.fromEvent(this.nfcLib, 'reader')
+
+  // onReader$ = Rx.Observable.fromEvent(this.nfcLib, 'reader') // @FIX: Double import Rx & Observable ?
+  onReader$ = Observable.fromEvent(this.nfcLib, 'reader')
 
   /**
    * Events as Observables
@@ -122,7 +123,7 @@ export class NfcService {
   // card - when we find a card
   onCard = this.onCard$.subscribe(async card => {
     if (this.DEBUG) { console.log(`(nfcS) - Processing card (uid:`, card.uid + ')' ); }
-    
+
     console.log(this.readOrWriteMode, this.NDEFMessageToWrite)
     switch (this.readOrWriteMode) {
       case 'read':
@@ -172,35 +173,66 @@ export class NfcService {
     this.actionManager.onCard('READ_CARD_HEADER').then(rawCardHeader => {
       console.log('(nfcS) -', 'rawHeader', rawCardHeader);
 
+      if ( typeof rawCardHeader === 'undefined') {
+        this.aCardCouldntBeRead$.next('Could not read card.');
+        return;
+      }
+
       const tag = nfcCard.parseInfo(rawCardHeader);
       console.log('(nfcS) - tag info:', tag);
 
       // There might be a NDEF message and we are able to read the tag
-      if (nfcCard.isFormatedAsNDEF() && nfcCard.hasReadPermissions() && nfcCard.hasNDEFMessage()) {
-
-        const messageLength = nfcCard.getNDEFMessageLengthToRead();
-
-        // Read the ndef message (from block 4, and pass the appropriate length to read)
-        this.actionManager.onCard('READ_CARD_MESSAGE', 4, messageLength).then(NDEFRawMessage => {
-
-          try {
-            // Parse the buffer as a NDEF raw message
-            const NDEFMessage = nfcCard.parseNDEF(NDEFRawMessage);
-
-            // Success: Next the result to the component
-            this.aCardHasBeenRead$.next(NDEFMessage);
-          } catch (e) {
-            // Error: Next the Error to the component
-            this.aCardCouldntBeRead$.next(e);
-          }
-
-        });
-
-      } else {
-        this.aCardCouldntBeRead$.next('No ndef message found.');
-        console.log('Could not parse anything from this tag: \n The tag is either empty, locked, has a wrong NDEF format or is unreadable.')
+      if (!nfcCard.isFormatedAsNDEF() || !nfcCard.hasReadPermissions() || !nfcCard.hasNDEFMessage()) {
+        this.aCardCouldntBeRead$.next('Could not parse anything from this tag: \n The tag is either empty, locked, has a wrong NDEF format or is unreadable.');
+        return;
       }
+
+      const messageLength = nfcCard.getNDEFMessageLengthToRead();
+
+      // Read the ndef message (from block 4, and pass the appropriate length to read)
+      this.actionManager.onCard('READ_CARD_MESSAGE', 4, messageLength).then(NDEFRawMessage => {
+
+        try {
+          // Parse the buffer as a NDEF raw message
+          const NDEFMessage = nfcCard.parseNDEF(NDEFRawMessage);
+
+          // Success: Next the result to the component
+          this.aCardHasBeenRead$.next(NDEFMessage);
+        } catch (e) {
+          // Error: Next the Error to the component
+          this.aCardCouldntBeRead$.next(e);
+        }
+
+
+      });
+
     });
+    //   // There might be a NDEF message and we are able to read the tag
+    //   if (nfcCard.isFormatedAsNDEF() && nfcCard.hasReadPermissions() && nfcCard.hasNDEFMessage()) {
+
+    //     const messageLength = nfcCard.getNDEFMessageLengthToRead();
+
+    //     // Read the ndef message (from block 4, and pass the appropriate length to read)
+    //     this.actionManager.onCard('READ_CARD_MESSAGE', 4, messageLength).then(NDEFRawMessage => {
+
+    //       try {
+    //         // Parse the buffer as a NDEF raw message
+    //         const NDEFMessage = nfcCard.parseNDEF(NDEFRawMessage);
+
+    //         // Success: Next the result to the component
+    //         this.aCardHasBeenRead$.next(NDEFMessage);
+    //       } catch (e) {
+    //         // Error: Next the Error to the component
+    //         this.aCardCouldntBeRead$.next(e);
+    //       }
+
+    //     });
+
+    //   } else {
+    //     this.aCardCouldntBeRead$.next('No ndef message found.');
+    //     console.log('Could not parse anything from this tag: \n The tag is either empty, locked, has a wrong NDEF format or is unreadable.')
+    //   }
+    // });
 
   }
 
@@ -231,7 +263,7 @@ export class NfcService {
 
       // Read the ndef message (from block 4, and pass the appropriate length to read)
       this.actionManager.onCard('WRITE_CARD_MESSAGE', 4, null, preparedData).then(result => {
-        
+
         // Success !
         if (result) {
           this.aCardHasBeenWritten$.next(NDEFMessage);
@@ -250,8 +282,6 @@ export class NfcService {
   }
   constructor(
     public NfcParser: NfcParserService,
-    public ndefFormater: NdefFormaterService,
-    // public nfcCard: nfcCardService
   ) {
     console.log('(nfcS) - NfcService loaded');
   }
