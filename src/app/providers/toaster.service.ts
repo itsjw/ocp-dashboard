@@ -13,6 +13,7 @@ export class ToasterConfigService {
   constructor(public toasterService: ToasterService) {
   }
 
+  // https://github.com/Stabzs/Angular2-Toaster/blob/master/src/toaster-config.ts#L35
   getConfig() {
     return new ToasterConfig({
       positionClass: this.position,
@@ -22,6 +23,20 @@ export class ToasterConfigService {
       preventDuplicates: true,
       animation: this.animationType,
       limit: this.toastsLimit,
+      iconClasses: {
+        error: 'fa fa-exclamation-triangle toaster-icon',
+        info: 'fa fa-info-circle toaster-icon',
+        wait: 'fa fa-pause toaster-icon',
+        success: 'fa fa-check-circle toaster-icon',
+        warning: 'fa fa-exclamation-circle toaster-icon'
+      },
+      typeClasses: {
+        error: 'toast-danger',
+        info: 'toast-info',
+        wait: 'toast-wait',
+        success: 'toast-success',
+        warning: 'toast-warning'
+      }
     });
   }
 
@@ -44,7 +59,6 @@ export class ToasterConfigService {
    * @param {string} type 'error, success, info, warning...'
    * @param {string} title 'a title'
    * @param {string} body 'body of the message to be shown'
-   * @memberof NfcComponent
    */
   show(type: string, title: string, body: string) {
     this.toasterConfig = this.getConfig();

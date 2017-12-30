@@ -10,9 +10,9 @@ $nb-themes: nb-register-theme((
     // fonts
     font-main: Roboto,
     font-secondary: Roboto, // @TODO: choose & set a secondary font
-    font-size: 0.94rem, // main font-size
-    font-size-lg: 1.1rem,
-    font-size-xlg:1.2rem,
+    font-size: 0.92rem, // main font-size
+    font-size-lg: 1.0rem,
+    font-size-xlg:1.1rem,
     color-fg-text: #72777a,
     color-fg-heading: color-fg,
     font-weight-normal: 500,
@@ -152,7 +152,8 @@ $nb-themes: nb-register-theme((
     /**
     * @Global
     */
-    layout-bg: #b9b9b9, //@TODO: more contrasted
+    // layout-bg: #b9b9b9, // more contrast
+    layout-bg: #F9F9F9, //less contrast
     // layout-window-mode-bg: #f9fafb,
 
     // global colors
@@ -161,10 +162,16 @@ $nb-themes: nb-register-theme((
     color-fg-highlight:#3d518c,
 
     color-primary: #3d518c,
-    color-success: #155724, // alternative: 59b969
-    color-info: #4ca6ff,
-    color-warning: #ffa100,
-    color-danger: #c74a6a,
+    color-success: #4f772d, // alternative: 59b969
+    color-info: #3a79b7,
+    color-warning: #F0AD4E,
+    color-danger: #C12127,
+    // color-primary: #3d518c,
+    // color-success: #155724, // alternative: 59b969
+    // color-info: #4ca6ff,
+    // color-warning: #F0AD4E,
+    // color-danger: #c74a6a,
+
 
     // text-success: #59b969,
 
@@ -191,16 +198,75 @@ $nb-themes: nb-register-theme((
 };
 
 /**
-* Forms overwrites
+* CSS Overwrites
 */
 
-// buttons
-.btn, button {
-  padding: 0.375rem 0.75rem !important;
-  cursor: pointer !important;
+/**
+* all
+*/
+
+// @element: all
+* {
+  transition: all ease 0.5s !important;
 }
 
-// ngbradiogroup (radio toggle btn)
+/**
+* Left menu
+*/
+// @element: icons
+nb-menu .menu-icon {
+  font-weight: bold;
+}
+// @element: home icon
+nb-menu .nb-home {
+  color: #5c7edc !important;
+}
+/**
+* Top menu
+*/
+// @element: user avatar
+.nb-theme-default nb-user {
+  //@element: circle
+  .user-picture {
+  height: 2rem;
+  width: 2rem;
+  background: #3a7eca;
+  border: solid 1px #2e5a8a;
+  color: #eee !important;
+  }
+  //@element: name
+  .info-container {
+    color: #2e5a8c;
+    font-weight: 500;
+  }
+}
+
+/**
+* Forms
+*/
+
+// @element: buttons
+// .btn, button {
+//   padding: 0.375rem 0.75rem !important;
+//   cursor: pointer !important;
+// }
+
+// @element: default btn
+.nb-theme-default .btn,
+.nb-theme-default button {
+  padding: 0.375rem 0.75rem !important;
+  cursor: pointer !important;
+  text-transform: none !important;
+  font-weight: 400 !important;
+}
+// @element: small btn
+.nb-theme-default .btn-group .btn-sm {
+  height: 30px;
+  line-height: 27px;
+  padding: 0 9px !important;
+}
+
+// @element: ngbradiogroup (radio toggle btn)
 .nb-theme-default .btn-outline-divided-group .btn:not(.active),
 .nb-theme-default .btn-outline-toggle-group .btn:not(.active) {
   // background-color: #dddddd;
@@ -208,43 +274,83 @@ $nb-themes: nb-register-theme((
   background: #3d518c; // primary
   color: #888888 !important;
 }
+
+// @element: ngbradiogroup hover
 .nb-theme-default .btn-outline-divided-group .btn:hover,
 .nb-theme-default .btn-outline-toggle-group .btn:hover {
-  // background-color: #dddddd;
-  // opacity: 0.6;
-  // background: #3d518c; // primary
   color: #cccccc !important;
 }
+
+
+// @element: default input
+.nb-theme-default .input-group-addon, .nb-theme-default input.form-control {
+  height: 35px;
+}
+// @element: default input placeholder
+::-webkit-input-placeholder {
+  font-size: 0.85rem !important;
+}
+
 .input-group-addon,
 .form-control {
   padding: 0.375rem 0.75rem !important;
-  // color: nb-theme(form-control-text-primary-color);
-  // background-color: nb-theme(form-control-bg);
-  // border: nb-theme(form-control-border-width)
-  //         nb-theme(form-control-border-type)
-  //         nb-theme(form-control-border-color);
-  // font-family: nb-theme(font-main);
-  // border-radius: nb-theme(form-control-border-radius);
-
-  // &:focus {
-  //   border: nb-theme(form-control-border-width)
-  //           nb-theme(form-control-border-type)
-  //           nb-theme(form-control-selected-border-color);
-  //   background-color: nb-theme(form-control-focus-bg);
-  // }
-
-  // &:disabled {
-  //   border-color: nb-theme(form-control-border-color);
-
-  //   @include install-placeholder(rgba(nb-theme(form-control-placeholder-color), 0.5),
-  //                                nb-theme(form-control-placeholder-font-size));
-  // }
-  // @include install-placeholder(nb-theme(form-control-placeholder-color),
-  //                              nb-theme(form-control-placeholder-font-size));
 }
 select.form-control:not([size]):not([multiple]) {
   height: auto !important;
 }
+
+
+/**
+* nb-cards
+*/
+
+// @element:nb card defaults
+.nb-theme-default nb-card-header, .nb-theme-default nb-card {
+  font-weight: 500;
+}
+
+.toaster-icon {
+  left: 0.75rem !important;
+  top: 1.2rem !important;
+  font-size: 1.8rem !important;
+}
+// @TODO: replace colors by them getter. eg. nb-theme(color-danger)
+// doesn't register the changes fast enough apparently ?
+.nb-theme-default .toast-info {
+  background-color: #fff;
+  color: #3a79b7 !important;
+  border: 1px solid;
+  .toaster-icon {
+    color: #3a79b7 !important;
+  }
+}
+.nb-theme-default .toast-success {
+  background-color: #fff;
+  color: #4f772d !important;
+  border: 1px solid;
+  .toaster-icon {
+    color: #4f772d !important;
+  }
+}
+.nb-theme-default .toast-warning {
+  background-color: #fff !important;
+  color: #F0AD4E !important;
+  // color: #F0AD4E !important;
+  border: 1px solid;
+  .toaster-icon {
+    color: #F0AD4E !important;
+  }
+}
+.nb-theme-default .toast-danger {
+  background-color: #fff;
+  // color: nb-theme(color-danger) !important;
+  color: #C12127 !important;
+  border: 1px solid;
+  .toaster-icon {
+    color: #C12127 !important;
+  }
+}
+
 .alert-success { }
 .alert {
   background: #eee !important;

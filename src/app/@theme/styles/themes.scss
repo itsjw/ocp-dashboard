@@ -39,10 +39,15 @@ $nb-themes: nb-register-theme((
 }
 
 nb-card {
-  border: 1px solid #eeeeee;
+  border: 1px solid #d6d6d6;
 }
 
 .fa {
   // spinner centering fix
-  padding: 1px 1px 0 0 !important;
+  padding-bottom: 1px;
+  padding-right: 1px;
+}
+
+.nb-theme-default nb-layout .layout nb-layout-header {
+  border-bottom: 1px solid #f9f9f9;
 }

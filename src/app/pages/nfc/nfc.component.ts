@@ -439,12 +439,26 @@ export class NfcComponent implements AfterContentInit {
   showToast(type: string, title: string, body: string) {
     this.config = new ToasterConfig({
       positionClass: 'toast-top-right',
-      timeout: 10000,
+      timeout: 7000,
       newestOnTop: true,
       tapToDismiss: true,
       preventDuplicates: true,
       animation: 'flyRight',
       limit: 25,
+      iconClasses: {
+        error: 'fa fa-exclamation-triangle toaster-icon',
+        info: 'fa fa-info-circle toaster-icon',
+        wait: 'fa fa-pause toaster-icon',
+        success: 'fa fa-check-circle toaster-icon',
+        warning: 'fa fa-exclamation-circle toaster-icon'
+      },
+      typeClasses: {
+        error: 'toast-danger',
+        info: 'toast-info',
+        wait: 'toast-wait',
+        success: 'toast-success',
+        warning: 'toast-warning'
+      }
     });
     const toast: Toast = {
       type: type,

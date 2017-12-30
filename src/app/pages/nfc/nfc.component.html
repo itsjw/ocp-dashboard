@@ -3,7 +3,9 @@
   <nb-card-header>
     <div class="row">
       <div class="col-8">
-        NFC Card Reader/Writer
+        <h5>
+          NFC Card Reader/Writer
+        </h5>
       </div>
       <div class="col-4 color-primary-txt text-right" *ngIf="isLoading">
         <i class="fa fa-circle-o-notch  fa-spin fa-fw"></i>
@@ -73,10 +75,10 @@
             <label>Mode: {{ readOrWriteMode }} </label><br />
             <div [(ngModel)]="readOrWriteMode" ngbRadioGroup
                   class="btn-group btn-toggle-group btn-outline-toggle-group btn-group-full-width btn-toggle-radio-group col-md-6 r-w-mode">
-              <label ngbButtonLabel class="btn btn-outline-primary">
+              <label ngbButtonLabel class="btn btn-sm btn-outline-primary">
                 <input ngbButton type="radio" value="write" (click)="writeCard()"> Write
               </label>
-              <label ngbButtonLabel class="btn btn-outline-primary">
+              <label ngbButtonLabel class="btn btn-sm btn-outline-primary">
                 <input ngbButton type="radio" value="read" (click)="readCard()"> Read
               </label>
             </div>

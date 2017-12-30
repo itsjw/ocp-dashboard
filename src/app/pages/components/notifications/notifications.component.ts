@@ -61,6 +61,34 @@ export class NotificationsComponent {
       preventDuplicates: this.isDuplicatesPrevented,
       animation: this.animationType,
       limit: this.toastsLimit,
+      // iconClasses: {
+      //   error: 'icon-error',
+      //   info: 'icon-info',
+      //   wait: 'icon-wait',
+      //   success: 'icon-success',
+      //   warning: 'icon-warning'
+      // },
+      // typeClasses: {
+      //   error: 'toast-error',
+      //   info: 'toast-info',
+      //   wait: 'toast-wait',
+      //   success: 'toast-success',
+      //   warning: 'toast-warning'
+      // },
+      iconClasses: {
+        error: 'fa fa-exclamation-triangle toaster-icon',
+        info: 'fa fa-info-circle toaster-icon',
+        wait: 'fa fa-pause toaster-icon',
+        success: 'fa fa-check-circle toaster-icon',
+        warning: 'fa fa-exclamation-circle toaster-icon'
+      },
+      typeClasses: {
+        error: 'toast-danger',
+        info: 'toast-info',
+        wait: 'toast-wait',
+        success: 'toast-success',
+        warning: 'toast-warning'
+      }
     });
     const toast: Toast = {
       type: type,
