@@ -41,6 +41,14 @@ import { TCPParserService } from 'app/providers/tcp/tcp-parser.service';
 // Utils
 import { CryptoService } from './providers/crypto/crypto.service';
 
+import {
+  NbAuthComponent,
+  NbLoginComponent,
+  NbRegisterComponent,
+  NbLogoutComponent,
+  NbRequestPasswordComponent,
+  NbResetPasswordComponent,
+} from '@nebular/auth';
 
 @NgModule({
   declarations: [

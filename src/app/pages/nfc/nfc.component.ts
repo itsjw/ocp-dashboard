@@ -116,31 +116,31 @@ export class NfcComponent implements AfterContentInit {
     // this.printer.printText('12345678910');
 
     // Get client list @init
-    // this.tcp.getClientList().then(clients => {
-    //   console.log(clients);
-    //   this.clients = clients;
-    //   this.selectedClient =  clients[0]
+    this.tcp.getClientListx().then(clients => {
+      console.log(clients);
+      this.clients = clients;
+      this.selectedClient =  clients[0]
 
-    //   // Debug => starts in write mode
-    //   this.writeCard();
-    //   this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
+      // Debug => starts in write mode
+      this.writeCard();
+      this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
 
-    // })
+    })
 
     // Simple flag to avoid multiple requests to get the pin code
     this.getClientListReq = true;
 
-    this.tcp.getClientList().on('clients', clients => {
+    // this.tcp.getClientList().on('clients', clients => {
 
-      if (!clients) {
-        this.showToast('error', 'Error', 'Something went wrong while trying to get the pin code through the TCP server.');
-        this.getClientListReq = false;
-        return;
-      }
+    //   if (!clients) {
+    //     this.showToast('error', 'Error', 'Something went wrong while trying to get the pin code through the TCP server.');
+    //     this.getClientListReq = false;
+    //     return;
+    //   }
 
-      this.clients = clients;
-      this.selectedClient = clients[0]
-    });
+    //   this.clients = clients;
+    //   this.selectedClient = clients[0]
+    // });
 
 
     this.writtenCardsCount = 0;
@@ -281,15 +281,15 @@ export class NfcComponent implements AfterContentInit {
    * TCP Client
    */
 
-    this.tcp.onTCPClientConnect$.subscribe(connect => {
-      console.log('Connected to the TCP server.');
-      this.nfc.TCPServer.status = 'ON';
-    })
-    this.tcp.onTCPClientError$.subscribe(error => {
-      console.log('An error occured on the TCP server link:', error)
-      this.nfc.TCPServer.status = 'OFF';
+    // this.tcp.onTCPClientConnect$.subscribe(connect => {
+    //   console.log('Connected to the TCP server.');
+    //   this.nfc.TCPServer.status = 'ON';
+    // })
+    // this.tcp.onTCPClientError$.subscribe(error => {
+    //   console.log('An error occured on the TCP server link:', error)
+    //   this.nfc.TCPServer.status = 'OFF';
 
-    })
+    // })
     // @TODO: implement the rest of the events if needed ?
   }
 
@@ -319,41 +319,36 @@ export class NfcComponent implements AfterContentInit {
     // })
 
     // args: uuId, clientId
-    this.tcp.createTag('123456789', '49').on('tagCreated', parsedResult => {
-      this.isLoading = false;
+    // this.tcp.createTag('123456789', '49').on('tagCreated', parsedResult => {
+    //   this.isLoading = false;
 
-      if (!parsedResult) {
-        this.showToast('error', 'Error', 'Something went wrong while trying to get the pin code through the TCP server.');
-        this.createTagReq = false;
-        return;
-      }
+    //   if (!parsedResult) {
+    //     this.showToast('error', 'Error', 'Something went wrong while trying to get the pin code through the TCP server.');
+    //     this.createTagReq = false;
+    //     return;
+    //   }
 
-      this.cardContent.pin = parsedResult.pinCode;
-      this.cardContent.securityTransportCompany = this.selectedClient.name;
-      this.cardContent.bankName = this.cardContent.bankName;
-      this.cardContent.appVersion = environment.version
-
-
-      this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
-
-    })
-
-    // this.tcp.getPinCode().then(pinCode => {
-    //   this.cardContent.pin = pinCode;
+    //   this.cardContent.pin = parsedResult.pinCode;
     //   this.cardContent.securityTransportCompany = this.selectedClient.name;
     //   this.cardContent.bankName = this.cardContent.bankName;
     //   this.cardContent.appVersion = environment.version
 
-    //   this.isLoading = false;
 
     //   this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
 
-    // }).catch(error => {
-    //   this.isLoading = false;
-    //   this.showToast('error', 'Error', 'Something went wrong while trying to get the pin code through the TCP server.');
-
-    //   console.log('TCP server error', error)
     // })
+
+    this.tcp.getPinCode().then(pinCode => {
+      this.cardContent.pin = pinCode;
+      this.cardContent.securityTransportCompany = this.selectedClient.name;
+      this.cardContent.bankName = this.cardContent.bankName;
+      this.cardContent.appVersion = environment.version
+
+      this.isLoading = false;
+
+      this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
+
+    })
 
     return [{ type: 'text', text: JSON.stringify(this.cardContent), language: 'en'}];
   }
