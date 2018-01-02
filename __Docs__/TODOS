@@ -1,16 +1,18 @@
 style:
   toasts:
-    color
-    danger/error name
-    Prevent arising of duplicate toast
-    icons danger/warning/info...
+    x color
+    x danger/error name
+    x Prevent arising of duplicate toast
+    x icons danger/warning/info...
   alerts:
-    danger/error
-    icons
-  app icon
-  NFC icon
-  loader style
+    x danger/error
+    x icons
+  - app icon
+  - NFC icon
+  x loader style
 
+  ++
+  docs generation
 
   ++:
     translation: see maximegris e-angular => update electron-angular version ?
