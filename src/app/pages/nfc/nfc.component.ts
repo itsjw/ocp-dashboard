@@ -14,6 +14,7 @@ import { environment } from '../../../environments';
 import { TcpClientService } from 'app/providers/tcp/tcp-client.service';
 import { concat } from 'rxjs/operator/concat';
 import { Buffer } from 'buffer';
+import { CryptoService } from 'app/providers/crypto/crypto.service';
 
 @Component({
   selector: 'ngx-nfc',
@@ -37,8 +38,9 @@ export class NfcComponent implements AfterContentInit {
   getClientListReq: boolean;
   createTagReq: boolean;
   config: ToasterConfig;
-  cardContent: { pin: any; securityTransportCompany: string; bankName: any; appVersion: string; };
+  cardContent: { uid: string; pin: any; securityTransportCompany: string; bankName: any; appVersion: string; };
   cardContentModel = {
+    uid: '',
     pin: '',
     securityTransportCompany: '',
     bankName: '',
@@ -99,7 +101,8 @@ export class NfcComponent implements AfterContentInit {
     public printer: PrinterService,
     public tcp: TcpClientService,
     public toast: ToasterConfigService,
-    private toasterService: ToasterService
+    private toasterService: ToasterService,
+    private crypto: CryptoService
   ) {
       console.log('NFC page loaded.');
 
@@ -111,36 +114,41 @@ export class NfcComponent implements AfterContentInit {
 
   ngAfterContentInit () {
 
-    const TCPServerTest = this.tcp.testConnection()
+    const TCPServerTest = this.tcp.testConnection();
 
     // this.printer.printText('12345678910');
 
-    // Get client list @init
-    this.tcp.getClientListx().then(clients => {
-      console.log(clients);
-      this.clients = clients;
-      this.selectedClient =  clients[0]
+    // MOCKER
+    // this.tcp.getClientListx().then(clients => {
+    //   console.log(clients);
+    //   this.clients = clients;
+    //   this.selectedClient =  clients[0]
 
-      // Debug => starts in write mode
-      this.writeCard();
-      this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
+    //   // Debug => starts in write mode
+    //   this.writeCard();
+    //   this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
 
-    })
+    // })
 
     // Simple flag to avoid multiple requests to get the pin code
     this.getClientListReq = true;
 
-    // this.tcp.getClientList().on('clients', clients => {
+    this.tcp.getClientList().on('clients', clients => {
 
-    //   if (!clients) {
-    //     this.showToast('error', 'Error', 'Something went wrong while trying to get the pin code through the TCP server.');
-    //     this.getClientListReq = false;
-    //     return;
-    //   }
+      if (!clients) {
+        this.showToast('error', 'Error', 'Something went wrong while trying to get the pin code through the TCP server.');
+        this.getClientListReq = false;
+        return;
+      }
 
-    //   this.clients = clients;
-    //   this.selectedClient = clients[0]
-    // });
+      this.clients = clients;
+      this.selectedClient = clients[0];
+
+      // We got the client list (and therefore a selected client), we can get the pin code and app version
+      this.init();
+      
+    });
+
 
 
     this.writtenCardsCount = 0;
@@ -179,11 +187,27 @@ export class NfcComponent implements AfterContentInit {
       if (this.DEBUG) { console.log(`Found a card`, card ); }
 
       // reset the view at any switch read/write
-      this.resetViewObjects();
+      // this.resetViewObjects();
 
       // A card has just been swiped but not processed yet: show spinner
       this.nfc.card.status = 'ON';
+      this.nfc.card.uid = card.uid;
       this.isLoading = true;
+
+      if (this.readOrWriteMode === 'read') {
+        this.nfcS.triggerAction();
+      }
+      
+      if (this.readOrWriteMode === 'write') {
+        // set the value to write using appriopriate getter
+        this.getValuesToWrite().then(NDEFMessage => {
+          console.log('Found a card and re-set NDEFMessage as:', NDEFMessage);
+          this.nfcS.setNDEFMessageToWrite(NDEFMessage);
+          this.nfcS.triggerAction();
+        }, err => {
+          console.log(err)
+        })
+      }
 
     });
 
@@ -193,6 +217,7 @@ export class NfcComponent implements AfterContentInit {
 
         // A card has been removed
         this.nfc.card.status = 'OFF';
+        this.nfc.card.uid = '';
 
         this.isLoading = false;
     });
@@ -239,16 +264,24 @@ export class NfcComponent implements AfterContentInit {
     this.nfcS.aCardHasBeenWritten$.subscribe(data => {
       console.log('A card has been written', data);
 
+      // @TODO: pass the card nfc_id (uid)
+      // No parsing nor confirming, we assume it worked and we passed the confirm cmd successfully.
+      this.tcp.confirmTag('4375');
+
       // Tell the user a card has been written
       this.showToast('success', 'Success', 'A card has been successfully written');
+
+      // Card count
       this.writtenCardsCount++;
 
+
+      // reinit to regenerate the pin for next card
       this.init();
     });
 
     // aCardHasBeenWritten - when a card could not be written
     this.nfcS.aCardCouldNotBeWritten$.subscribe(error => {
-      console.log('CNW')
+      console.log('A card could not be written', error);
 
       // Process ended: hide spinner
       this.isLoading = false;
@@ -281,15 +314,15 @@ export class NfcComponent implements AfterContentInit {
    * TCP Client
    */
 
-    // this.tcp.onTCPClientConnect$.subscribe(connect => {
-    //   console.log('Connected to the TCP server.');
-    //   this.nfc.TCPServer.status = 'ON';
-    // })
-    // this.tcp.onTCPClientError$.subscribe(error => {
-    //   console.log('An error occured on the TCP server link:', error)
-    //   this.nfc.TCPServer.status = 'OFF';
+    this.tcp.onTCPClientConnect$.subscribe(connect => {
+      console.log('Connected to the TCP server.');
+      this.nfc.TCPServer.status = 'ON';
+    })
+    this.tcp.onTCPClientError$.subscribe(error => {
+      console.log('An error occured on the TCP server link:', error)
+      this.nfc.TCPServer.status = 'OFF';
 
-    // })
+    })
     // @TODO: implement the rest of the events if needed ?
   }
 
@@ -302,63 +335,87 @@ export class NfcComponent implements AfterContentInit {
    * @memberof NfcComponent
    */
   getValuesToWrite() {
-    // A pin code has already been generated, update only other fields
-    if (this.cardContent.pin || this.createTagReq) {
-      this.cardContent.securityTransportCompany = this.selectedClient.name;
-      this.cardContent.bankName = this.cardContent.bankName;
-      return [{ type: 'text', text: JSON.stringify(this.cardContent), language: 'en'}];
-    }
+    return new Promise((resolve, reject) => {
 
-    this.isLoading = true;
+      console.log('getValuesToWrite this.cardContent', this.cardContent, this.cardContent.bankName)
 
-    // Simple flag to avoid multiple requests to get the pin code
-    this.createTagReq = true;
+      // A pin code has already been generated, update only other fields
+      if (this.cardContent.pin || this.createTagReq) {
+        console.log('A PIN code has already been generated.')
+        this.cardContent.securityTransportCompany = this.selectedClient.name;
+        this.cardContent.bankName = this.cardContent.bankName;
+        resolve([{ type: 'text', text: JSON.stringify(this.cardContent), language: 'en'}]);
+        return;
+      }
 
-    // this.tcp.createTag('123456789', '49').addListener('tagCreated', parsedResult => {
-    //   console.log('parsedResult', parsedResult)
-    // })
+      // Do not get the pin code through the TCP server if we don't have a card on the reader
+      // We need a card uid to get the pin code
+      if (this.nfc.card.status !== 'ON') {
+        reject('Not card found, did not try to get the pin code through the tcp server');
+        return;
+      }
 
-    // args: uuId, clientId
-    // this.tcp.createTag('123456789', '49').on('tagCreated', parsedResult => {
-    //   this.isLoading = false;
+      this.isLoading = true;
 
-    //   if (!parsedResult) {
-    //     this.showToast('error', 'Error', 'Something went wrong while trying to get the pin code through the TCP server.');
-    //     this.createTagReq = false;
-    //     return;
-    //   }
+      // Simple flag to avoid multiple requests to get the pin code
+      this.createTagReq = true;
 
-    //   this.cardContent.pin = parsedResult.pinCode;
-    //   this.cardContent.securityTransportCompany = this.selectedClient.name;
-    //   this.cardContent.bankName = this.cardContent.bankName;
-    //   this.cardContent.appVersion = environment.version
+      // We need to get a pin code from the TCP server
+      // args: uuId, clientId
+      this.tcp.createTag(this.nfc.card.uid, this.selectedClient.id).on('tagCreated', parsedResult => {
+        console.log('Requesting a PIN on the TCP server')
+        
+        this.isLoading = false;
+        this.createTagReq = false;
 
+        console.log('TCP server returned:', parsedResult);
 
-    //   this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
+        if (!parsedResult) {
+          const err = 'Something went wrong while trying to get the pin code through the TCP server.';
+          this.showToast('error', 'Error', err);
+          reject(err);
+          return;
+        }
 
-    // })
+        this.cardContent.pin = this.crypto.encrypt(parsedResult.pin, 'MasdriaDemoKey');
+        this.cardContent.securityTransportCompany = this.selectedClient.name;
+        this.cardContent.bankName = this.cardContent.bankName;
+        this.cardContent.uid = parsedResult.nfc_id;
+        this.cardContent.appVersion = environment.version
 
-    this.tcp.getPinCode().then(pinCode => {
-      this.cardContent.pin = pinCode;
-      this.cardContent.securityTransportCompany = this.selectedClient.name;
-      this.cardContent.bankName = this.cardContent.bankName;
-      this.cardContent.appVersion = environment.version
+        console.log('TCP request ended successfully, cardContent has been set to:', this.cardContent)
+        console.log('TCP request ended successfully, NDEFMessage has been set to:', [{ type: 'text', text: JSON.stringify(this.cardContent), language: 'en'}])
+        resolve([{ type: 'text', text: JSON.stringify(this.cardContent), language: 'en'}]);
+        
+      })
 
-      this.isLoading = false;
+      // MOCKER
+      // this.tcp.getPinCode().then(pinCode => {
+      //   this.cardContent.pin = pinCode;
+      //   this.cardContent.securityTransportCompany = this.selectedClient.name;
+      //   this.cardContent.bankName = this.cardContent.bankName;
+      //   this.cardContent.appVersion = environment.version
 
-      this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
+      //   this.isLoading = false;
 
-    })
+      //   this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
 
-    return [{ type: 'text', text: JSON.stringify(this.cardContent), language: 'en'}];
+      // })
+    });
   }
 
 
 
   onUserInput(ev) {
     // set the value to write using appriopriate getter
-    this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
+    this.getValuesToWrite().then(NDEFMessage => {
+      console.log('onUserInput: set NDEFMessage as:', NDEFMessage);
+      this.nfcS.setNDEFMessageToWrite(NDEFMessage);
+    }, err => {
+      console.log(err)
+    })
   }
+
   readCard() {
     // reset the view at any switch read/write
     this.resetViewObjects();
@@ -376,9 +433,16 @@ export class NfcComponent implements AfterContentInit {
     this.nfcS.setMode(this.readOrWriteMode);
 
     // set the value to write using appriopriate getter
-    this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
+    // this.getValuesToWrite().then(NDEFMessage => {
+    //   console.log('Change to Write mode detected: set NDEFMessage as:', NDEFMessage);
+    //   this.nfcS.setNDEFMessageToWrite(NDEFMessage);
+    // }, err => {
+    //   console.log(err)
+    // })
   }
+  setNDEFMessageToWrite(cardContent) {
 
+  }
   /**
    * @method resetViewObject
    * @description resets the view (empty it) by settings object bound to view to default
@@ -405,7 +469,6 @@ export class NfcComponent implements AfterContentInit {
     if (this.readOrWriteMode === 'write') {
       // Reinit in write mode
       this.writeCard();
-      this.nfcS.setNDEFMessageToWrite(this.getValuesToWrite());
     }
     if (this.readOrWriteMode === 'read') {
       // Reinit in write mode
@@ -464,7 +527,6 @@ export class NfcComponent implements AfterContentInit {
       bodyOutputType: BodyOutputType.TrustedHtml,
     };
 
-    console.log(toast)
     this.toasterService.popAsync(toast);
   }
 }

@@ -32,7 +32,7 @@ export class TCPParserService {
 
     // Getting transaction ID: look into responses array, split the 2 first chars of the last entry string.
     const currentTransactionId = this.getTransactionId();
-    console.log('.' + currentTransactionId + '.')
+    // console.log('.' + currentTransactionId + '.')
     return this.constructTransactionObj(currentTransactionId, resArr, data);
   }
 
@@ -71,7 +71,6 @@ export class TCPParserService {
 
       // confirmTag
       case '75': {
-        console.log(data.toString())
         return this.translateResponseCode(data.toString());
       }
 

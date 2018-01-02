@@ -5,6 +5,11 @@ import { Observable, ObservableInput } from 'rxjs/Observable';
 import { TCPParserService } from 'app/providers/tcp/tcp-parser.service';
 import { TCPCommandsService } from 'app/providers/tcp/tcp-commands.service';
 
+export const TCP_CONST = {
+  host: '192.168.169.193',
+  port: 5150
+}
+
 @Injectable()
 export class TcpClientService {
 
@@ -31,7 +36,7 @@ export class TcpClientService {
 
   testConnection() {
     const client = new Socket();
-    client.connect(1337, '127.0.0.1', null);
+    client.connect(TCP_CONST.port, TCP_CONST.host, null);
   }
 
   TCPClient(boxType, action, args?) {
@@ -55,12 +60,12 @@ export class TcpClientService {
     this.onTCPClientTimeout$ = Observable.fromEvent(client, 'timeout')
     this.onTCPClientError$ = Observable.fromEvent(client, 'error')
 
-    client.connect(1337, '127.0.0.1', () => {
-    // client.connect(5150, '192.168.169.193', () => {
+    // client.connect(1337, '127.0.0.1', () => {
+    client.connect(TCP_CONST.port, TCP_CONST.host, () => {
 
       // const rawData = Buffer.from('373501000400000034300d0a', 'hex'); // nfc.confirmTag.getCommand(40, 999) confirm (75)
       const rawData = this[boxType][action].getCommand(args);
-      console.log('SENT: rawData:', rawData);
+      // console.log('SENT: rawData:', rawData);
       typeof rawData !== 'undefined' ? client.write(rawData) : console.log('Something went wrong while converting data!')
 
     });
@@ -74,21 +79,20 @@ export class TcpClientService {
      return client.on('data', data => {
       client.end(); // end client after server's response
 
-      console.log('~~~~~');
+      // console.log('~~~~~');
 
       this.responses.push(data);
-
-      console.log('RECEIVED: rawdata', data);
-      console.log('RECEIVED: ascii',  Buffer.from(data).toString());
 
       const resArr = data.toString().replace( /\r\n/g, ' ' ).split(' ');
       resArr.splice(-1, 1);
       const finalResArr = resArr.length > 0 ? resArr : Buffer.from(data).toString();
-      console.log('RECEIVED: resArr', resArr);
 
       const parsedRes = this.TCPParser.getParsedRes(Buffer.from(data), resArr, this.responses);
-      console.log('PARSED RES: ', parsedRes);
-      client.emit('tagCreated', parsedRes);
+
+      if (parsedRes) {
+        client.emit('tagCreated', parsedRes)
+      }
+
     });
   }
 
@@ -127,6 +131,28 @@ export class TcpClientService {
   getTagInfo() {
     console.log('getTagInfo')
     const TCPClient = this.TCPClient('nfc', 'getTagInfo')
+  }
+
+  /**
+   * @description
+   * 
+   * @param {any} tagUId - it's the nfc_id generated and returned by the TCP server
+   * @memberof TcpClientService
+   */
+  confirmTag(tagUId) {
+    console.log('confirmTag')
+    const TCPClient = this.TCPClient('nfc', 'confirmTag', { uuId: tagUId })
+    
+    const that = this; // ugly
+
+    return TCPClient.on('data', function(data) {
+      TCPClient.end(); // end client after server's response
+      
+      // No parsing nor confirming, we assume it worked and we passed the confirm cmd successfully.
+      
+    });
+
+    
   }
 
 

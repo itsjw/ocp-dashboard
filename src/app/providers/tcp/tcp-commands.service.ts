@@ -97,13 +97,13 @@ export class TCPCommandsService {
           const concatBuffer = Buffer.concat([command, len, uuId, end, clid, end], command.length + len.length + uuId.length + end.length + clid.length + end.length);
 
 
-          console.log('concatBuffer', concatBuffer)
+          // console.log('concatBuffer', concatBuffer)
 
-          console.log('payload length', (clientIdHexa.length + 2 + args.uuId.length + 2))
-          console.log('original command', command)
-          console.log('clientIdHexa to add', clientIdHexa)
-          console.log('original command', Buffer.from(command))
-          console.log('clientIdHexa to add', Buffer.from(clientIdHexa))
+          // console.log('payload length', (clientIdHexa.length + 2 + args.uuId.length + 2))
+          // console.log('original command', command)
+          // console.log('clientIdHexa to add', clientIdHexa)
+          // console.log('original command', Buffer.from(command))
+          // console.log('clientIdHexa to add', Buffer.from(clientIdHexa))
 
           return concatBuffer;
         }

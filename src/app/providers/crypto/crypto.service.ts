@@ -17,6 +17,9 @@ export class CryptoService {
     return encryptedString; // (cyphered)
   }
 
+  /**
+   * Use: this.cryptoS.decrypt('EncodeMe', 'MasdriaDemoKey');
+   */
   decrypt(encryptedString, secretKeyName) {
     const decryptedString = CryptoJS.AES.decrypt(encryptedString, this[secretKeyName]).toString(CryptoJS.enc.Utf8);
     return decryptedString;

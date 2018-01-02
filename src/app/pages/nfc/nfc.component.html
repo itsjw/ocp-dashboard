@@ -38,31 +38,36 @@
             </div>
 
             <!-- Middle: Action: -->
-            <div class="col-4">
+            <div class="col-2">
               <i class="fa fa-circle red" aria-hidden="true" *ngIf="nfc?.TCPServer?.status == 'OFF'"></i>
               <span *ngIf="nfc?.TCPServer?.status == 'OFF'">
                 OCP Server
               </span>
-
             </div>
 
             <!-- Right: card written || card uid/type -->
-            <div class="col-4" *ngIf="readOrWriteMode=='write' && nfc?.reader?.status == 'ON'">
+            <div class="col-2" *ngIf="readOrWriteMode=='write' && nfc?.reader?.status == 'ON'">
               Cards written:
               <small>{{ writtenCardsCount }}</small>
             </div>
             <!-- card uid & type -->
-            <div class="col-2" *ngIf="nfc?.cardUid && readOrWriteMode=='read'">
+            <!-- <div class="col-2" *ngIf="nfc?.cardUid && readOrWriteMode=='read'">
               <h6>Card UID <span class="badge badge-primary">{{ nfc.cardUid }}</span></h6>
             </div>
             <div class="col-2" *ngIf="nfc?.cardType && readOrWriteMode=='read'">
               <h6>Card Type <span class="badge badge-primary">{{ nfc.cardType }}</span></h6>
+            </div> -->
+
+            <!-- spacer in READ MODE -->
+            <div class="col-2" *ngIf="readOrWriteMode=='read'">
             </div>
 
             <!-- Right: card being read -->
-            <div class="col-4 text-right" *ngIf="readOrWriteMode=='read'">
+            <div class="col-4 text-right">
               <span *ngIf="nfc?.card?.status == 'ON'">
                 <i class="fa fa-credit-card fa-fw"></i>
+                <br />
+                <small>({{ nfc?.card?.uid }})</small>
               </span>
             </div>
 
@@ -106,7 +111,8 @@
             <form>
               <div class="form-group">
                 <label>Pin code: </label><br />
-                <input type="text" class="form-control" placeholder="No pin built yet." [(ngModel)]="cardContent.pin" name="pin" disabled>
+                <!-- <input type="text" class="form-control" placeholder="No pin built yet." [(ngModel)]="cardContent.pin" name="pin" disabled> -->
+                <input type="text" class="form-control" placeholder="No pin built yet." value="{{ cardContent.pin | decryptPin }}" name="pin" disabled>
               </div>
             </form>
           </div>
@@ -132,7 +138,8 @@
 
 
 <!-- Standard record -->
-<table class="table" *ngIf="cardContent.pin && cardContent.securityTransportCompany && cardContent.bankName && cardContent.appVersion && readOrWriteMode === 'read'">
+<!-- <table class="table" *ngIf="cardContent.pin && cardContent.securityTransportCompany && cardContent.appVersion && readOrWriteMode === 'read'"> -->
+<table class="table" *ngIf="readOrWriteMode === 'read'">
   <thead>
     <tr>
       <th>Card Uid</th>
@@ -144,11 +151,20 @@
   </thead>
   <tbody>
     <tr>
-      <th scope="row">{{ cardContent.pin  | decryptPin }}</th>
+      <th scope="row">{{ cardContent.uid }}</th>
       <td>{{ cardContent.pin | decryptPin }}</td>
       <td>{{ cardContent.securityTransportCompany }}</td>
       <td>{{ cardContent.bankName }}</td>
       <td>{{ cardContent.appVersion }}</td>
+    </tr>
+  </tbody>
+  <tbody *ngIf="!cardContent.pin && !cardContent.securityTransportCompany && !cardContent.appVersion && !cardContent.bankName && !cardContent.uid">
+    <tr>
+      <th scope="row"> - </th>
+      <td> - </td>
+      <td> - </td>
+      <td> - </td>
+      <td> - </td>
     </tr>
   </tbody>
 </table>

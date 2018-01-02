@@ -125,17 +125,7 @@ export class NfcService {
     if (this.DEBUG) { console.log(`(nfcS) - Processing card (uid:`, card.uid + ')' ); }
 
     console.log(this.readOrWriteMode, this.NDEFMessageToWrite)
-    switch (this.readOrWriteMode) {
-      case 'read':
-        this.readAction();
-        break;
-      case 'write':
-        this.writeAction(this.NDEFMessageToWrite);
-        break;
 
-      default:
-        throw new Error('No mode set: Not sure if I\'m suppose to read or write here')
-    }
 
   });
 
@@ -166,12 +156,27 @@ export class NfcService {
       }
     }
   }
+  
+
+  triggerAction() {
+    switch (this.readOrWriteMode) {
+      case 'read':
+        this.readAction();
+        break;
+      case 'write':
+        this.writeAction(this.NDEFMessageToWrite);
+        break;
+
+      default:
+        throw new Error('No mode set: Not sure if I\'m suppose to read or write here')
+    }
+  }
 
   readAction() {
 
     // 1 -Read the header
     this.actionManager.onCard('READ_CARD_HEADER').then(rawCardHeader => {
-      console.log('(nfcS) -', 'rawHeader', rawCardHeader);
+      // console.log('(nfcS) -', 'rawHeader', rawCardHeader);
 
       if ( typeof rawCardHeader === 'undefined') {
         this.aCardCouldntBeRead$.next('Could not read card.');
@@ -238,8 +243,6 @@ export class NfcService {
 
   writeAction(NDEFMessage) {
 
-    console.log('abcd', NDEFMessage);
-
     if (typeof NDEFMessage === 'undefined') {
       console.log('NDEFMessage is undefined');
       this.aCardCouldNotBeWritten$.next('Tried to write a card but message was not constructed yet.');
@@ -248,14 +251,13 @@ export class NfcService {
 
     // 1 -Read the header
     this.actionManager.onCard('READ_CARD_HEADER').then(rawCardHeader => {
-    console.log('(nfcS) -', 'rawHeader', rawCardHeader);
+    // console.log('(nfcS) -', 'rawHeader', rawCardHeader);
 
     // instanciate the lib by parsing the header (allows us to use lazy methods: 'hasWritePermissions' & 'hasReadPermissions')
     const tag = nfcCard.parseInfo(rawCardHeader);
 
     // We can read and write data area
     if (nfcCard.hasWritePermissions() && nfcCard.hasReadPermissions()) {
-      console.log('a', NDEFMessage)
 
       // Prepare the buffer to write on the card
       const rawDataToWrite = nfcCard.prepareBytesToWrite(NDEFMessage);
@@ -267,7 +269,7 @@ export class NfcService {
         // Success !
         if (result) {
           this.aCardHasBeenWritten$.next(NDEFMessage);
-          console.log('Data have been written successfully.');
+          // console.log('(nfcS) - Data have been written successfully:', NDEFMessage);
         } else {
           // Error
           this.aCardCouldNotBeWritten$.next('Tried to write a card but message was not constructed yet.');
@@ -328,7 +330,7 @@ export class NfcService {
   }
 
   setNDEFMessageToWrite(NDEFMessage) {
-    console.log('NDEFMessage set:', NDEFMessage)
+    // console.log('NDEFMessage set:', NDEFMessage)
     this.NDEFMessageToWrite = NDEFMessage;
   }
 }
