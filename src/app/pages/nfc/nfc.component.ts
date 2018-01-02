@@ -264,12 +264,13 @@ export class NfcComponent implements AfterContentInit {
     this.nfcS.aCardHasBeenWritten$.subscribe(data => {
       console.log('A card has been written', data);
 
-      // @TODO: pass the card nfc_id (uid)
+      const cardUid = JSON.parse(data[0].text).uid;
+
       // No parsing nor confirming, we assume it worked and we passed the confirm cmd successfully.
-      this.tcp.confirmTag('4375');
+      this.tcp.confirmTag(cardUid);
 
       // Tell the user a card has been written
-      this.showToast('success', 'Success', 'A card has been successfully written');
+      this.showToast('success', 'Success', 'A card has been successfully written (#' + cardUid + ')' );
 
       // Card count
       this.writtenCardsCount++;
@@ -500,7 +501,7 @@ export class NfcComponent implements AfterContentInit {
       timeout: 7000,
       newestOnTop: true,
       tapToDismiss: true,
-      preventDuplicates: true,
+      preventDuplicates: false,
       animation: 'flyRight',
       limit: 25,
       iconClasses: {
